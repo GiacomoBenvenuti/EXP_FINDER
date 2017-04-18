@@ -48,6 +48,8 @@ end
 function EF_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Initialize Monkeys and Protocols lists
 
+s= what(['DATABASE'])
+cd(s.path);
 handles.output = hObject;
 [MonkName, ProtNames,MN] = initGUI;
 
@@ -55,14 +57,15 @@ handles.output = hObject;
 set(handles.MonkeyName,'String', ['Show_All' MonkName],'max',size(MN,2));
 set(handles.Protocol,'String', ['Show_All' ProtNames],'max',size(MN,2));
 
-% info
-STX=['HELP'  char(10) 'To start you have 2 options: ' char(10) char(10) ' 1 Select one '...
+% info ------
+STX=['HELP'  char(10) 'To start you have 2 options: ' char(10) char(10) ' 1. Select one '...
     'or more Monkey names' char(10) char(10) ' 2. Select one Protocol'];
 set(handles.Support,'String',STX)
+% ----------
 
 % Save
 handles.MonkNameAll = ['Show_All' MonkName];
-handles.ProtName = ['Show_All' ProtNames];
+handles.ProtName = ['Show_All'  ProtNames];
 
 handles.Selected_Monkeys = 'Show_All'; % index
 handles.Selected_Protocols ='Show_All';
@@ -85,25 +88,33 @@ varargout{1} = handles.output;
 
 % --- Executes on selection change in MonkeyName.
 function MonkeyName_Callback(hObject, eventdata, handles)
+s= what(['DATABASE']);
+cd(s.path);
 
 % LOAD
 handles=guidata(hObject);
 MNtmp=handles.MonkNameAll;
-ProtNames = handles.ProtName
+ProtNames = handles.ProtName;
+Sel_PRT = handles.Selected_Protocols;
 %set(hObject,'String',MN,'max',size(MN,2));
 
 % GET
 MN =MNtmp(2:end);
 SL_MN = get(hObject,'Value')
+
+% PROCESS
 if SL_MN==1
  set(handles.MonkeyName,'String', ...
-     ['Show_All' MN],'max',size(MN,2),'Value',1); 
+     [MNtmp],'max',size(MN,2),'Value',1); 
  
  set(handles.Protocol,'String', [ProtNames],'max',size(MN,2));
 else
+
+    if strcmp(Sel_PRT,'Show_All' )
+ 
+    
     % remove Show_All
-  
-   SL_MN = SL_MN-1 ;
+    % SL_MN = SL_MN-1 ;
 
 
 % PROCESS
@@ -124,11 +135,27 @@ CP = sum( CompProt,2);
 CPIndex = find(CP == size(ProtList,2));
 Sel_PRT = ProtList{1}(CPIndex);
 
+       
 % SET
-set(handles.Protocol,'String',Sel_PRT);
+set(handles.Protocol,'String',['Show_All' Sel_PRT']','Value',1);
+    else
+set(handles.Protocol,'String',['Show_All' Sel_PRT']','Value',2);
+    end
+  
 end
+
+% info ------
+STX=['HELP'  char(10) '* When you select a monkey name,' ...
+    ' the Protocol listbox is updated with only the Protocols available ' ...
+    'for that monkey.'  ...
+    '* If you select multiple monkey names, the Protocol Listbox is updated ' ...
+    'with the list of only the Protocols available for all selected monkeys' char(10) ...
+    '* To RESET select Show_All at the top of the List boxes'  ];
+set(handles.Support,'String',STX)
+% ----------
+
 % SAVE
-handles.Selected_Monkeys = MN(SL_MN);
+handles.Selected_Monkeys = MNtmp(SL_MN);
 handles.Selected_Protocols = Sel_PRT;
 guidata(hObject, handles);
 
@@ -148,21 +175,31 @@ end
 
 % --- Executes on selection change in Protocol.
 function Protocol_Callback(hObject, eventdata, handles)
+s= what(['DATABASE'])
+cd(s.path);
 
 % LOAD
 handles=guidata(hObject);
 SMK=handles.Selected_Monkeys; % use the custum monkey selection
 ProtName=handles.ProtName;
+MNtmp=handles.MonkNameAll;
+MN =MNtmp(2:end);
 
 % GET
 PRTn= get(hObject,'Value'); % get user selection
 
 % PROCESS
+if PRTn==1  % account for Show_All selection (RESET)
+ set(handles.MonkeyName,'String', ...
+     ['Show_All' MN],'max',size(MN,2),'Value',1); 
+ 
+ set(handles.Protocol,'String', [ProtName],'max',size(MN,2));
+ 
+else
+ 
+% PROCESS
 PN=ProtName(PRTn); % get name of selected protocol
-
-
-
-PNs = PN{1}; % cell 2 string
+PNs =['PRT_' PN{1}]; % cell 2 string
 LiST = dir(PNs); % find monkey files in the protocol folder
 MonkList = {LiST.name}
 PNs(1:4) = [];
@@ -195,17 +232,36 @@ set(handles.MonkeyName,'String',Mlist,'max',size(MNP,2),'Value',NewMonkSel);
 drawnow;
 
 % SAVE
+handles.Selected_Protocols = {PNs};
+end
+
+
+% info ------
+if  PRTn==1 % account for Show_All selection (RESET)
+STX=['HELP'  char(10) '!!! the research was manually resetted !!!' char(10)  ...  
+    '* When you select a Protocol name,' ...
+    ' the Monkey listbox is updated with all the monkey names for which  ' ...
+    'the selected protocl is available' char(10) ...
+    '* To RESET select Show_All at the top of the List boxes'];
+
+else
+    STX=['HELP'  char(10) '* When you select a Protocol name,' ...
+    ' the Monkey listbox is updated with all the monkey names for which  ' ...
+    'the selected protocl is available' char(10) ...
+    '* To RESET select Show_All at the top of the List boxes'];
+end
+set(handles.Support,'String',STX)
+
+% ----------
+
+
+% SAVE
 guidata(hObject, handles);
+
 
 
 % --- Executes during object creation, after setting all properties.
 function Protocol_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Protocol (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: listbox controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
@@ -236,9 +292,49 @@ end
 
 % --- Executes on button press in Update_Parameters.
 function Update_Parameters_Callback(hObject, eventdata, handles)
-% hObject    handle to Update_Parameters (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+handles=guidata(hObject);
+Sel_Monk = handles.Selected_Monkeys;
+Sel_PRT = handles.Selected_Protocols;
+
+% GET
+UPD= get(hObject,'Value'); % get user selection
+% get table
+
+% PROCESS
+% CreateParamTab
+s=what(['PRT_' Sel_PRT{1}])
+
+for i = 1:size(Sel_Monk,2)
+    tm = [Sel_Monk{i} Sel_PRT{1}];
+    load([s.path '/' tm])
+    eval(['mm{i} = ' tm]);
+    s = size(mm{1},2);
+    L(1,(1:6)+(6*(i-1) ) ) = [' mm{' num2str(i) '}'] ;
+end
+eval(['ParamTab = [' L ']' ]); 
+
+
+T =table([1:3]',[1:3]',[0 0 0 ]'); 
+
+% SET
+set(handles.uitable1,'Data',T{:,:} ,'ColumnName',{'Param' , 'Options', 'Select' },  'ColumnEditable',[false false true],'ColumnWidth',{130 180 60});
+
+set(handles.ExpList,'String',s)
+% PT = uitable
+% 
+% CreateExpTab
+% UpdateTable
+% UpdateExpTab
+%set(handles.ExpList, 'String', ParamTab)
+
+% Info ------------
+ STX=['Selection :' char(10) ...
+     'Monkeys: ' Sel_Monk char(10) ...
+     'Protocol:' Sel_PRT];
+
+set(handles.Support,'String',STX)
+%-----------------
+guidata(hObject, handles);
 
 
 % --- Executes on button press in Print.

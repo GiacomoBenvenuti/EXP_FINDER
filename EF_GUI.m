@@ -48,7 +48,7 @@ end
 function EF_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Initialize Monkeys and Protocols lists
 
-s= what(['DATABASE'])
+s= what(['DATABASE']);
 cd(s.path);
 handles.output = hObject;
 [MonkName, ProtNames,MN] = initGUI;
@@ -59,7 +59,8 @@ set(handles.Protocol,'String', ['Show_All' ProtNames],'max',size(MN,2));
 
 % info ------
 STX=['HELP'  char(10) 'To start you have 2 options: ' char(10) char(10) ' 1. Select one '...
-    'or more Monkey names' char(10) char(10) ' 2. Select one Protocol'];
+    'or more Monkey names' char(10) char(10) ' 2. Select one Protocol' ...
+    char (10)  char(10) '    ------------------- ' char(10) 'Database last update 6/10/2016'];
 set(handles.Support,'String',STX)
 % ----------
 
@@ -69,7 +70,7 @@ handles.ProtName = ['Show_All'  ProtNames];
 
 handles.Selected_Monkeys = 'Show_All'; % index
 handles.Selected_Protocols ='Show_All';
-
+handles.FlagProtSelection=0;
 guidata(hObject, handles);
 
 
@@ -96,6 +97,7 @@ handles=guidata(hObject);
 MNtmp=handles.MonkNameAll;
 ProtNames = handles.ProtName;
 Sel_PRT = handles.Selected_Protocols;
+flagPS= handles.FlagProtSelection;
 %set(hObject,'String',MN,'max',size(MN,2));
 
 % GET
@@ -108,17 +110,20 @@ if SL_MN==1
      [MNtmp],'max',size(MN,2),'Value',1); 
  
  set(handles.Protocol,'String', [ProtNames],'max',size(MN,2));
+ handles.Selected_Monkeys = 'Show_All'; % index
+handles.Selected_Protocols ='Show_All';
+handles.FlagProtSelection =0;
 else
 
-    if strcmp(Sel_PRT,'Show_All' )
+   if ~flagPS
  
     
     % remove Show_All
-    % SL_MN = SL_MN-1 ;
+ %    SL_MN = SL_MN-1 ;
 
 
 % PROCESS
-SMN=MN(SL_MN)
+SMN=MNtmp(SL_MN)
 % for multiple monkeys selection find which protocol
 % they have in common
 for i = 1:size(SMN,2)
@@ -134,13 +139,17 @@ end
 CP = sum( CompProt,2);
 CPIndex = find(CP == size(ProtList,2));
 Sel_PRT = ProtList{1}(CPIndex);
-
+ 
+   else
+       
+%Sel_PRT =Sel_PRT';
+ end
        
 % SET
-set(handles.Protocol,'String',['Show_All' Sel_PRT']','Value',1);
-    else
-set(handles.Protocol,'String',['Show_All' Sel_PRT']','Value',2);
-    end
+  Sel_PRT
+handles.FlagProtSelection
+set(handles.Protocol,'String',['Show_All'; Sel_PRT],'Value',1);
+
   
 end
 
@@ -156,7 +165,8 @@ set(handles.Support,'String',STX)
 
 % SAVE
 handles.Selected_Monkeys = MNtmp(SL_MN);
-handles.Selected_Protocols = Sel_PRT;
+ ['Show_All'; Sel_PRT]
+handles.Selected_Protocols = ['Show_All'; Sel_PRT];
 guidata(hObject, handles);
 
 
@@ -181,9 +191,12 @@ cd(s.path);
 % LOAD
 handles=guidata(hObject);
 SMK=handles.Selected_Monkeys; % use the custum monkey selection
+Sel_Prot=handles.Selected_Protocols ;
 ProtName=handles.ProtName;
 MNtmp=handles.MonkNameAll;
 MN =MNtmp(2:end);
+
+
 
 % GET
 PRTn= get(hObject,'Value'); % get user selection
@@ -194,11 +207,13 @@ if PRTn==1  % account for Show_All selection (RESET)
      ['Show_All' MN],'max',size(MN,2),'Value',1); 
  
  set(handles.Protocol,'String', [ProtName],'max',size(MN,2));
- 
+ handles.Selected_Monkeys = 'Show_All'; % index
+ handles.Selected_Protocols ='Show_All';
 else
  
 % PROCESS
-PN=ProtName(PRTn); % get name of selected protocol
+
+PN=Sel_Prot(PRTn); % get name of selected protocol
 PNs =['PRT_' PN{1}]; % cell 2 string
 LiST = dir(PNs); % find monkey files in the protocol folder
 MonkList = {LiST.name}
@@ -228,11 +243,14 @@ for i =2:size(MNP,2)+1
 end
 
 % SET
-set(handles.MonkeyName,'String',Mlist,'max',size(MNP,2),'Value',NewMonkSel);
+set(handles.MonkeyName,'String',MNP,'max',size(MNP,2),'Value',NewMonkSel);
+set(handles.Protocol,'String',['Show_All' PN']','Value',2);
 drawnow;
 
 % SAVE
-handles.Selected_Protocols = {PNs};
+
+handles.Selected_Protocols =['Show_All'; {PNs}];
+handles.FlagProtSelection =1;
 end
 
 
@@ -302,19 +320,27 @@ UPD= get(hObject,'Value'); % get user selection
 
 % PROCESS
 % CreateParamTab
-s=what(['PRT_' Sel_PRT{1}])
+sp=what(['PRT_' Sel_PRT{1}])
 
 for i = 1:size(Sel_Monk,2)
     tm = [Sel_Monk{i} Sel_PRT{1}];
-    load([s.path '/' tm])
+    load([sp.path '/' tm])
     eval(['mm{i} = ' tm]);
     s = size(mm{1},2);
-    L(1,(1:6)+(6*(i-1) ) ) = [' mm{' num2str(i) '}'] ;
+    txx = [' mm{' num2str(i) '}''']
+    L(1,(1:numel(txx))+(numel(txx)*(i-1) ) ) = txx ;
 end
 eval(['ParamTab = [' L ']' ]); 
 
+ParamNames = fieldnames(ParamTab);
 
-T =table([1:3]',[1:3]',[0 0 0 ]'); 
+for i = 1: size(ParamNames,1 )
+   Cond{i} = unique([ParamTab.(ParamNames{i})]);
+   SelTab{i} = nan;
+end
+
+T = table(ParamNames, Cond',SelTab')
+%T =table([1:3]',[1:3]',[0 0 0 ]'); 
 
 % SET
 set(handles.uitable1,'Data',T{:,:} ,'ColumnName',{'Param' , 'Options', 'Select' },  'ColumnEditable',[false false true],'ColumnWidth',{130 180 60});
@@ -346,6 +372,12 @@ function Print_Callback(hObject, eventdata, handles)
 
 % --- Executes on button press in Update_Database.
 function Update_Database_Callback(hObject, eventdata, handles)
-% hObject    handle to Update_Database (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% Select /data folder
+
+% Import all .log files
+
+% Tempo??
+
+CreateProtocolSummary
+
+%save LastUpdate file

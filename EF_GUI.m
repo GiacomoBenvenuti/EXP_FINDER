@@ -69,7 +69,7 @@ handles.MonkNameAll = ['Show_All' MonkName];
 handles.ProtName = ['Show_All'  ProtNames];
 
 handles.Selected_Monkeys = 'Show_All'; % index
-handles.Selected_Protocols ='Show_All';
+handles.Selected_Protocols = ['Show_All'  ProtNames];
 handles.FlagProtSelection=0;
 guidata(hObject, handles);
 
@@ -78,12 +78,7 @@ guidata(hObject, handles);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = EF_GUI_OutputFcn(hObject, eventdata, handles)
-% varargout  cell array for returning output args (see VARARGOUT);
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
-% Get default command line output from handles structure
 varargout{1} = handles.output;
 
 
@@ -98,60 +93,56 @@ MNtmp=handles.MonkNameAll;
 ProtNames = handles.ProtName;
 Sel_PRT = handles.Selected_Protocols;
 flagPS= handles.FlagProtSelection;
+Sel_Monk = handles.Selected_Monkeys;
 %set(hObject,'String',MN,'max',size(MN,2));
 
 % GET
-MN =MNtmp(2:end);
+%MN =MNtmp(2:end);
 SL_MN = get(hObject,'Value')
 
 % PROCESS
 if SL_MN==1
- set(handles.MonkeyName,'String', ...
-     [MNtmp],'max',size(MN,2),'Value',1); 
- 
- set(handles.Protocol,'String', [ProtNames],'max',size(MN,2));
- handles.Selected_Monkeys = 'Show_All'; % index
-handles.Selected_Protocols ='Show_All';
-handles.FlagProtSelection =0;
-else
-
-   if ~flagPS
- 
+    set(handles.MonkeyName,'String', ...
+        [MNtmp],'max',size(MNtmp,2),'Value',1);
     
-    % remove Show_All
- %    SL_MN = SL_MN-1 ;
-
-
-% PROCESS
-SMN=MNtmp(SL_MN)
-% for multiple monkeys selection find which protocol
-% they have in common
-for i = 1:size(SMN,2)
-    n = [SMN{i} 'PList']
-    load( n );
-    eval(['tm = fieldnames(' n ')']);
-    ProtList{i}=tm;
+    set(handles.Protocol,'String', [ProtNames],'max',size(MNtmp,2));
+    handles.Selected_Monkeys = MNtmp,; % index
+    handles.Selected_Protocols =ProtNames;
+    handles.FlagProtSelection =0;
+else
+    
+    if ~flagPS
+        
+        % PROCESS
+        SMN=MNtmp(SL_MN)
+        % for multiple monkeys selection find which protocol
+        % they have in common
+        for i = 1:size(SMN,2)
+            n = [SMN{i} 'PList']
+            load( n );
+            eval(['tm = fieldnames(' n ')']);
+            ProtList{i}=tm;
+        end
+        
+        for i = 1:size(ProtList,2)
+            CompProt(:,i) = ismember(ProtList{1},ProtList{i})
+        end
+        CP = sum( CompProt,2);
+        CPIndex = find(CP == size(ProtList,2));
+        Sel_PRT = ProtList{1}(CPIndex);
+        handles.Selected_Monkeys = MNtmp(SL_MN);
+    else
+        handles.Selected_Monkeys =Sel_Monk(SL_MN);
+     
+    end
+    set(handles.Protocol,'String',[ Sel_PRT],'Value',2);
+    
+    % SAVE
+    handles.Selected_Protocols = ['Show_All'; Sel_PRT];
+   
 end
 
-for i = 1:size(ProtList,2)
-    CompProt(:,i) = ismember(ProtList{1},ProtList{i})
-end
-CP = sum( CompProt,2);
-CPIndex = find(CP == size(ProtList,2));
-Sel_PRT = ProtList{1}(CPIndex);
- 
-   else
-       
-%Sel_PRT =Sel_PRT';
- end
-       
-% SET
-  Sel_PRT
-handles.FlagProtSelection
-set(handles.Protocol,'String',['Show_All'; Sel_PRT],'Value',1);
 
-  
-end
 
 % info ------
 STX=['HELP'  char(10) '* When you select a monkey name,' ...
@@ -163,10 +154,7 @@ STX=['HELP'  char(10) '* When you select a monkey name,' ...
 set(handles.Support,'String',STX)
 % ----------
 
-% SAVE
-handles.Selected_Monkeys = MNtmp(SL_MN);
- ['Show_All'; Sel_PRT]
-handles.Selected_Protocols = ['Show_All'; Sel_PRT];
+
 guidata(hObject, handles);
 
 
@@ -196,77 +184,81 @@ ProtName=handles.ProtName;
 MNtmp=handles.MonkNameAll;
 MN =MNtmp(2:end);
 
-
-
 % GET
 PRTn= get(hObject,'Value'); % get user selection
 
 % PROCESS
 if PRTn==1  % account for Show_All selection (RESET)
- set(handles.MonkeyName,'String', ...
-     ['Show_All' MN],'max',size(MN,2),'Value',1); 
- 
- set(handles.Protocol,'String', [ProtName],'max',size(MN,2));
- handles.Selected_Monkeys = 'Show_All'; % index
- handles.Selected_Protocols ='Show_All';
+    set(handles.MonkeyName,'String', ...
+        ['Show_All' MN],'max',size(MN,2),'Value',1);
+    
+    set(handles.Protocol,'String', [ProtName],'max',size(MN,2));
+    handles.Selected_Monkeys = MNtmp,; % index
+    handles.Selected_Protocols =ProtName;
+    handles.FlagProtSelection =0;
 else
- 
-% PROCESS
-
-PN=Sel_Prot(PRTn); % get name of selected protocol
-PNs =['PRT_' PN{1}]; % cell 2 string
-LiST = dir(PNs); % find monkey files in the protocol folder
-MonkList = {LiST.name}
-PNs(1:4) = [];
-% find all monkeys for that protocol (PNs)
-% correspond to the files names within the Prot
-% folder
-ct=0;
-for i = 1:size(MonkList,2)
-    tm = MonkList{i};
-    ts = strfind(tm , PNs)
-    if ~isempty(ts)
-        ct=ct+1;
-        MNP{ct} = tm(1:ts-1)
+    
+    % PROCESS
+    PN=Sel_Prot(PRTn); % get name of selected protocol
+    PNs =['PRT_' PN{1}]; % cell 2 string
+    LiST = dir(PNs); % find monkey files in the protocol folder
+    MonkList = {LiST.name}
+    PNs(1:4) = [];
+    % find all monkeys for that protocol (PNs)
+    % correspond to the files names within the Prot
+    % folder
+    ct=0;
+    for i = 1:size(MonkList,2)
+        tm = MonkList{i};
+        ts = strfind(tm , PNs)
+        if ~isempty(ts)
+            ct=ct+1;
+            MNP{ct} = tm(1:ts-1);
+        end
+        
     end
     
-end
-
-NewMonkSel=ismember(SMK,MNP)
-if NewMonkSel==0
-    NewMonkSel=1;
-end
-
-Mlist{1} = 'Show_All' ;
-for i =2:size(MNP,2)+1
-    Mlist{i} = MNP{i-1};
-end
-
-% SET
-set(handles.MonkeyName,'String',MNP,'max',size(MNP,2),'Value',NewMonkSel);
-set(handles.Protocol,'String',['Show_All' PN']','Value',2);
-drawnow;
-
-% SAVE
-
-handles.Selected_Protocols =['Show_All'; {PNs}];
-handles.FlagProtSelection =1;
+    NewMonkSel=find(ismember(SMK,MNP)==1)
+    if NewMonkSel==0
+        NewMonkSel=1;
+    end
+    
+    % Mlist{1} = 'Show_All' ;
+    % for i =2:size(MNP,2)+1
+    %     Mlist{i} = MNP{i-1};
+    % end
+    
+    % SET
+    set(handles.MonkeyName,'String',['Show_All' MNP],'max',size(MNP,2)+1,'Value',NewMonkSel);
+    set(handles.Protocol,'String',['Show_All' PN']','Value',2);
+    drawnow;
+    
+    % SAVE
+    handles.Selected_Monkeys = ['Show_All' MNP];
+    
+   if strcmp(PNs,'Show_All')
+    handles.Selected_Protocols =[ {PNs}];
+   else
+        handles.Selected_Protocols =['Show_All'; {PNs}];
+   end
+    handles.FlagProtSelection =1;
+    handles
 end
 
 
 % info ------
 if  PRTn==1 % account for Show_All selection (RESET)
-STX=['HELP'  char(10) '!!! the research was manually resetted !!!' char(10)  ...  
-    '* When you select a Protocol name,' ...
-    ' the Monkey listbox is updated with all the monkey names for which  ' ...
-    'the selected protocl is available' char(10) ...
-    '* To RESET select Show_All at the top of the List boxes'];
-
+    STX=['HELP'  char(10) '!!! the research was manually resetted !!!' char(10)  ...
+        '* When you select a Protocol name,' ...
+        ' the Monkey listbox is updated with all the monkey names for which  ' ...
+        'the selected protocl is available' char(10) ...
+        '* To RESET select Show_All at the top of the List boxes'];
+    
 else
     STX=['HELP'  char(10) '* When you select a Protocol name,' ...
-    ' the Monkey listbox is updated with all the monkey names for which  ' ...
-    'the selected protocl is available' char(10) ...
-    '* To RESET select Show_All at the top of the List boxes'];
+        ' the Monkey listbox is updated with all the monkey names for which  ' ...
+        'the selected protocl is available' char(10) ...
+        '* To RESET select Show_All at the top of the List boxes'];
 end
 set(handles.Support,'String',STX)
 
@@ -311,55 +303,61 @@ end
 % --- Executes on button press in Update_Parameters.
 function Update_Parameters_Callback(hObject, eventdata, handles)
 handles=guidata(hObject);
-Sel_Monk = handles.Selected_Monkeys;
+tm = handles.Selected_Monkeys;
 Sel_PRT = handles.Selected_Protocols;
+Sel_Monk ={ tm{2:end}};
+
+% Info ------------
+STX=['Selection :' char(10) ...
+    'Monkeys: ' Sel_Monk char(10) ...
+    'Protocol:' Sel_PRT(2,:)];
+
+set(handles.Support,'String',STX)
+%-----------------
 
 % GET
-UPD= get(hObject,'Value'); % get user selection
+%UPD= get(hObject,'Value'); % get user selection
 % get table
 
 % PROCESS
 % CreateParamTab
-sp=what(['PRT_' Sel_PRT{1}])
+sp=what(['PRT_' Sel_PRT{2}]);
 
 for i = 1:size(Sel_Monk,2)
-    tm = [Sel_Monk{i} Sel_PRT{1}];
+    tm = [Sel_Monk{i} Sel_PRT{2}];
     load([sp.path '/' tm])
     eval(['mm{i} = ' tm]);
     s = size(mm{1},2);
     txx = [' mm{' num2str(i) '}''']
     L(1,(1:numel(txx))+(numel(txx)*(i-1) ) ) = txx ;
 end
-eval(['ParamTab = [' L ']' ]); 
+
+% Check if struct diff monkeys have the same num of fields!
+
+eval(['ParamTab = [' L ']' ]);
 
 ParamNames = fieldnames(ParamTab);
 
 for i = 1: size(ParamNames,1 )
-   Cond{i} = unique([ParamTab.(ParamNames{i})]);
-   SelTab{i} = nan;
+    Cond{i} = unique([ParamTab.(ParamNames{i})]);
+    SelTab{i} = nan;
 end
 
 T = table(ParamNames, Cond',SelTab')
-%T =table([1:3]',[1:3]',[0 0 0 ]'); 
+%T =table([1:3]',[1:3]',[0 0 0 ]');
 
 % SET
 set(handles.uitable1,'Data',T{:,:} ,'ColumnName',{'Param' , 'Options', 'Select' },  'ColumnEditable',[false false true],'ColumnWidth',{130 180 60});
 
 set(handles.ExpList,'String',s)
 % PT = uitable
-% 
+%
 % CreateExpTab
 % UpdateTable
 % UpdateExpTab
 %set(handles.ExpList, 'String', ParamTab)
 
-% Info ------------
- STX=['Selection :' char(10) ...
-     'Monkeys: ' Sel_Monk char(10) ...
-     'Protocol:' Sel_PRT];
 
-set(handles.Support,'String',STX)
-%-----------------
 guidata(hObject, handles);
 
 

@@ -61,16 +61,18 @@ set(handles.Protocol,'String', ['Show_All' ProtNames],'max',size(MN,2));
 STX=['HELP'  char(10) 'To start you have 2 options: ' char(10) char(10) ' 1. Select one '...
     'or more Monkey names' char(10) char(10) ' 2. Select one Protocol' ...
     char (10)  char(10) '    ------------------- ' char(10) 'Database last update 6/10/2016'];
+
 set(handles.Support,'String',STX)
 % ----------
 
 % Save
-handles.MonkNameAll = ['Show_All' MonkName];
-handles.ProtName = ['Show_All'  ProtNames];
+handles.MonkNameAll = ['Show_All' MonkName]';
+handles.ProtName = ['Show_All'  ProtNames]';
 
-handles.Selected_Monkeys = 'Show_All'; % index
-handles.Selected_Protocols = ['Show_All'  ProtNames];
+handles.Selected_Monkeys = ['Show_All' MonkName]';
+handles.Selected_Protocols = ['Show_All' ; ProtNames'];
 handles.FlagProtSelection=0;
+handles.flag_Create_Tab = 0;
 guidata(hObject, handles);
 
 
@@ -105,7 +107,7 @@ if SL_MN==1
     set(handles.MonkeyName,'String', ...
         [MNtmp],'max',size(MNtmp,2),'Value',1);
     
-    set(handles.Protocol,'String', [ProtNames],'max',size(MNtmp,2));
+    set(handles.Protocol,'String', ProtNames','max',size(MNtmp,2));
     handles.Selected_Monkeys = MNtmp,; % index
     handles.Selected_Protocols =ProtNames;
     handles.FlagProtSelection =0;
@@ -130,31 +132,43 @@ else
         CP = sum( CompProt,2);
         CPIndex = find(CP == size(ProtList,2));
         Sel_PRT = ProtList{1}(CPIndex);
+      
         handles.Selected_Monkeys = MNtmp(SL_MN);
+        
     else
-        handles.Selected_Monkeys =Sel_Monk(SL_MN);
-     
+    %    handles.Selected_Monkeys =Sel_Monk(SL_MN);
+ 
     end
-    set(handles.Protocol,'String',[ Sel_PRT],'Value',2);
+     tm = strcmp(Sel_PRT,'Show_All');
+      if  tm(1 )== 1
+       handles.Selected_Protocols = [ Sel_PRT];
+      set(handles.Protocol,'String',[ Sel_PRT],'Value',2);
+      else
+      set(handles.Protocol,'String',['Show_All'; Sel_PRT],'Value',2);
+       handles.Selected_Protocols = ['Show_All'; Sel_PRT];
+      end
     
     % SAVE
-    handles.Selected_Protocols = ['Show_All'; Sel_PRT];
+ 
    
 end
 
 
 
 % info ------
-STX=['HELP'  char(10) '* When you select a monkey name,' ...
-    ' the Protocol listbox is updated with only the Protocols available ' ...
-    'for that monkey.'  ...
-    '* If you select multiple monkey names, the Protocol Listbox is updated ' ...
-    'with the list of only the Protocols available for all selected monkeys' char(10) ...
-    '* To RESET select Show_All at the top of the List boxes'  ];
+% STX=[    'HELP'  char(10) '* When you select a monkey name,' ...
+%     ' the Protocol listbox is updated with only the Protocols available ' ...
+%     'for that monkey.                 '  ...
+%     '* If you select multiple monkey names, the Protocol Listbox is updated ' ...
+%     'with the list of only the Protocols available for all selected monkeys' char(10) ...
+%     '* To RESET select Show_All at the top of the List boxes'  ];
+
+STX=['Sel Prot =' handles.Selected_Protocols' char(10) ...
+    'Sel Monk = ' handles.Selected_Monkeys' ];
 set(handles.Support,'String',STX)
 % ----------
 
-
+handles.flag_Create_Tab = 0;
 guidata(hObject, handles);
 
 
@@ -182,7 +196,7 @@ SMK=handles.Selected_Monkeys; % use the custum monkey selection
 Sel_Prot=handles.Selected_Protocols ;
 ProtName=handles.ProtName;
 MNtmp=handles.MonkNameAll;
-MN =MNtmp(2:end);
+%MN =MNtmp(2:end);
 
 % GET
 PRTn= get(hObject,'Value'); % get user selection
@@ -190,10 +204,10 @@ PRTn= get(hObject,'Value'); % get user selection
 % PROCESS
 if PRTn==1  % account for Show_All selection (RESET)
     set(handles.MonkeyName,'String', ...
-        ['Show_All' MN],'max',size(MN,2),'Value',1);
+       MNtmp,'max',size( MNtmp,2),'Value',1);
     
-    set(handles.Protocol,'String', [ProtName],'max',size(MN,2));
-    handles.Selected_Monkeys = MNtmp,; % index
+    set(handles.Protocol,'String', [ProtName],'max',size(ProtName,2));
+    handles.Selected_Monkeys = MNtmp; % index
     handles.Selected_Protocols =ProtName;
     handles.FlagProtSelection =0;
 else
@@ -234,15 +248,16 @@ else
     drawnow;
     
     % SAVE
-    handles.Selected_Monkeys = ['Show_All' MNP];
+    handles.Selected_Monkeys = ['Show_All'; MNP'];
     
    if strcmp(PNs,'Show_All')
-    handles.Selected_Protocols =[ {PNs}];
+        handles.Selected_Protocols =[ {PNs}]
    else
-        handles.Selected_Protocols =['Show_All'; {PNs}];
+        handles.Selected_Protocols =['Show_All'; {PNs}]
    end
-    handles.FlagProtSelection =1;
-    handles
+   
+   handles.FlagProtSelection =1;
+   
 end
 
 
@@ -260,11 +275,14 @@ else
         'the selected protocl is available' char(10) ...
         '* To RESET select Show_All at the top of the List boxes'];
 end
+
+STX=['Sel Prot =' handles.Selected_Protocols' char(10) ...
+    'Sel Monk = ' handles.Selected_Monkeys' ];
 set(handles.Support,'String',STX)
 
 % ----------
 
-
+handles.flag_Create_Tab = 0;
 % SAVE
 guidata(hObject, handles);
 
@@ -303,9 +321,16 @@ end
 % --- Executes on button press in Update_Parameters.
 function Update_Parameters_Callback(hObject, eventdata, handles)
 handles=guidata(hObject);
-tm = handles.Selected_Monkeys;
+
+flagUD = handles.flag_Create_Tab;
+
+if flagUD == 0
+
 Sel_PRT = handles.Selected_Protocols;
-Sel_Monk ={ tm{2:end}};
+MM = handles.Selected_Monkeys;
+tm = get(handles.MonkeyName,'Value');
+ 
+Sel_Monk ={ MM{tm}};
 
 % Info ------------
 STX=['Selection :' char(10) ...
@@ -315,41 +340,106 @@ STX=['Selection :' char(10) ...
 set(handles.Support,'String',STX)
 %-----------------
 
-% GET
-%UPD= get(hObject,'Value'); % get user selection
-% get table
-
 % PROCESS
 % CreateParamTab
 sp=what(['PRT_' Sel_PRT{2}]);
 
+clear L
 for i = 1:size(Sel_Monk,2)
     tm = [Sel_Monk{i} Sel_PRT{2}];
     load([sp.path '/' tm])
     eval(['mm{i} = ' tm]);
     s = size(mm{1},2);
-    txx = [' mm{' num2str(i) '}''']
+    fn{i} =fieldnames(mm{i});
+    nf(i)=size( fn{i},1);
+    txx = [' mm{' num2str(i) '}']
     L(1,(1:numel(txx))+(numel(txx)*(i-1) ) ) = txx ;
 end
 
 % Check if struct diff monkeys have the same num of fields!
+if ~(sum(nf)==nf(1)*(numel(nf))) 
+d = questdlg(['The number of parameters ' ...
+    'is not the same for all monkeys!' char(10) ...
+    '[' num2str(nf) ']. Do you want to continue anyway?'] )
 
-eval(['ParamTab = [' L ']' ]);
+if  strcmp(d, 'Yes') == 1
+ %  errordlg('I still have to do this part :) ','Different param number');  
+   [a b] = max(nf(:)) ;
+   LessP = find(nf<a);
+     
+   DiffParamInd =  fn{b}(find(ismember(fn{b}, fn{ LessP(1) }) ==0));
+  
+   for i = 1:numel(LessP)
+       for y = 1: numel(DiffParamInd )
+           for q =1:size(mm{LessP(i)},2)
+        eval([' mm{LessP(i)}(1,q).' DiffParamInd{y} ' = nan']);
+       end
+   end
+   end
+  
+   % use fn
+else
+    errordlg('Select a new group of Monkeys!','Different param number');
+   
+end
+end
 
-ParamNames = fieldnames(ParamTab);
+eval(['ParamTab = [' L ']' ]);% full Tab 
 
+ParamTabUD = ParamTab;  % ParamTabUD is the one that will be updated
+handles.ParamTab = ParamTab;
+handles.ParamTabUD = ParamTabUD;
+else %-------------------------------
+% If user change tab field 'Select' update the Tab
+ParamTabUD=handles.ParamTabUD;
+TabModif = get(handles.uitable1,'Data');
+FieldCol =  TabModif(:,1);
+SelCol=[TabModif{:,3}];
+[a s1 ] = find( isnan(SelCol) ==0);
+if numel(s1)>0 % go on only if user modified the Tab
+InpField = FieldCol(s1)
+InpVal = SelCol(s1)
+% Find Exp index with selected param value
+for i = 1: numel(InpVal)
+SelExpInd_All{i} = find ([ParamTabUD.(InpField{i})] == InpVal(i));
+end
+% find intersection among exp indexes selected based on different params
+SelExpInd = mintersect(SelExpInd_All{:});
+ParamTabUD = ParamTabUD(SelExpInd);
+handles.ParamTabUD = ParamTabUD;
+end
+end % only first time --------------------------------------
+%------------------------------------------------------
+handles.flag_Create_Tab = 1; % record the tab has already been created for next time the button is pushed
+
+% Generate Selection tab
+ParamNames = fieldnames(ParamTabUD);
+clear Cond SelTab
 for i = 1: size(ParamNames,1 )
-    Cond{i} = unique([ParamTab.(ParamNames{i})]);
-    SelTab{i} = nan;
+    Cond{i} =nan;
+ try   
+     tm =num2str([ unique([ParamTabUD.(ParamNames{i})])  ])
+   
+     Cond{i} =(tm)
+
+ end
+    SelTab{i} =nan ;
 end
 
 T = table(ParamNames, Cond',SelTab')
-%T =table([1:3]',[1:3]',[0 0 0 ]');
-
 % SET
-set(handles.uitable1,'Data',T{:,:} ,'ColumnName',{'Param' , 'Options', 'Select' },  'ColumnEditable',[false false true],'ColumnWidth',{130 180 60});
+set(handles.uitable1,'Data',T{:,:} ,'ColumnName',{'Param' , 'Options', 'Select' }, ...
+    'ColumnEditable',[false false true],'ColumnWidth',{150 250 140});
 
-set(handles.ExpList,'String',s)
+set(handles.uitable2,'Data',{ParamTabUD.name}' ,'ColumnName',{'EXP ID' , 'Options', 'Select' }, ...
+    'ColumnEditable',[false false true],'ColumnWidth',{150 250 140});
+%%
+%a=struct2table(ParamTab)
+
+%set(handles.uitable2,'Data',a{:,:})
+%%
+
+
 % PT = uitable
 %
 % CreateExpTab

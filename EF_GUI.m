@@ -321,6 +321,8 @@ end
 % --- Executes on button press in Update_Parameters.
 function Update_Parameters_Callback(hObject, eventdata, handles)
 handles=guidata(hObject);
+%%
+set(handles.figure1,'color',[1 .5 .5])
 
 flagUD = handles.flag_Create_Tab;
 
@@ -390,19 +392,34 @@ ParamTabUD = ParamTab;  % ParamTabUD is the one that will be updated
 handles.ParamTab = ParamTab;
 handles.ParamTabUD = ParamTabUD;
 else %-------------------------------
+    
+% PARAMETERS TAB USER INPUT    
 % If user change tab field 'Select' update the Tab
 ParamTabUD=handles.ParamTabUD;
 TabModif = get(handles.uitable1,'Data');
 FieldCol =  TabModif(:,1);
-SelCol=[TabModif{:,3}];
-[a s1 ] = find( isnan(SelCol) ==0);
+SelCol=[{TabModif{:,3}}];
+[a s1 ] = find(strcmp('All',SelCol) ==0);
 if numel(s1)>0 % go on only if user modified the Tab
 InpField = FieldCol(s1)
-InpVal = SelCol(s1)
+
+for i =1:numel(s1)
+InpVal{i} =  str2num(cell2mat(SelCol(s1)));
+end 
+
 % Find Exp index with selected param value
 for i = 1: numel(InpVal)
-SelExpInd_All{i} = find ([ParamTabUD.(InpField{i})] == InpVal(i));
+  % put together EXP matching multiple selections 'OR'
+  clear tm  
+  for h = 1:size(InpVal{i},2)
+       tm{h} = find ([ParamTabUD.(InpField{i})] == InpVal{i}(h));
+  end
+  tm1 = unique( [tm{:}]);
+  SelExpInd_All{i} = tm1;
+  
 end
+
+
 % find intersection among exp indexes selected based on different params
 SelExpInd = mintersect(SelExpInd_All{:});
 ParamTabUD = ParamTabUD(SelExpInd);
@@ -418,21 +435,36 @@ clear Cond SelTab
 for i = 1: size(ParamNames,1 )
     Cond{i} =nan;
  try   
-     tm =num2str([ unique([ParamTabUD.(ParamNames{i})])  ])
-   
-     Cond{i} =(tm)
-
+     tm =num2str([ unique([ParamTabUD.(ParamNames{i})])  ]);
+      Cond{i} =(tm);
  end
-    SelTab{i} =nan ;
+    SelTab{i} ='All' ;
 end
 
-T = table(ParamNames, Cond',SelTab')
+T = table(ParamNames, Cond',SelTab');
 % SET
 set(handles.uitable1,'Data',T{:,:} ,'ColumnName',{'Param' , 'Options', 'Select' }, ...
     'ColumnEditable',[false false true],'ColumnWidth',{150 250 140});
 
-set(handles.uitable2,'Data',{ParamTabUD.name}' ,'ColumnName',{'EXP ID' , 'Options', 'Select' }, ...
-    'ColumnEditable',[false false true],'ColumnWidth',{150 250 140});
+% Convert all field to str to display in uitable2
+clear tm
+for i = 1:size(ParamTabUD,2)
+   for y  = 1: size(ParamNames,1 ) 
+       tm = num2str([ ParamTabUD(i).(ParamNames{y})  ]);
+       ParamStructtxt(i).(ParamNames{y})  = tm;
+     clear ss1
+     ss1= numel(tm)*50;
+     ss1(find(ss1>150)) =150;
+     ss{y} = ss1;
+   end
+end
+
+ParamTabUDtxt=struct2table( ParamStructtxt);
+
+set(handles.uitable2,'Data',ParamTabUDtxt{:,:} ,'ColumnName',  {ParamNames{:}}, 'ColumnWidth',{ss{:}} );
+set(handles.figure1,'color',[.94 .94 .94])
+%%
+
 %%
 %a=struct2table(ParamTab)
 

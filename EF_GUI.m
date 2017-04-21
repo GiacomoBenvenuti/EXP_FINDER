@@ -58,8 +58,8 @@ set(handles.MonkeyName,'String', ['Show_All' MonkName],'max',size(MN,2));
 set(handles.Protocol,'String', ['Show_All' ProtNames],'max',size(MN,2));
 
 % info ------
-STX=['HELP'  char(10) 'To start you have 2 options: ' char(10) char(10) ' 1. Select one '...
-    'or more Monkey names' char(10) char(10) ' 2. Select one Protocol' ...
+STX=['HELP'  char(10) 'To start you have 2 options: ' char(10)... 
+    ' 1. Select one or more Monkey names on the top left listbox' char(10)  ' 2. Select one Protocol on the listbox beside that' ...
     char (10)  char(10) '    ------------------- ' char(10) 'Database last update 6/10/2016'];
 
 set(handles.Support,'String',STX)
@@ -156,15 +156,31 @@ end
 
 
 % info ------
-% STX=[    'HELP'  char(10) '* When you select a monkey name,' ...
-%     ' the Protocol listbox is updated with only the Protocols available ' ...
-%     'for that monkey.                 '  ...
-%     '* If you select multiple monkey names, the Protocol Listbox is updated ' ...
-%     'with the list of only the Protocols available for all selected monkeys' char(10) ...
-%     '* To RESET select Show_All at the top of the List boxes'  ];
+  if  flagPS
 
-STX=['Sel Prot =' handles.Selected_Protocols' char(10) ...
-    'Sel Monk = ' handles.Selected_Monkeys' ];
+STX={'HELP ' ...
+   'You have selected a Protocol!' ...
+   'Now now you can readjust your monkeys ' ...
+   'selection if you like. ' ...
+   'Then PUSH THE UPDATE PARAMETERS button' ...
+    ' ' ...
+    '* To RESET select Show_All at the top of the List boxes' };
+  else 
+      STX={'HELP ' ...
+    '* When you select a Monkey name the' ...
+    'Protocols listbox is updated with only ' ...
+    'the Protocols available for that monkey.'  ...
+    ' ' ...
+    '* If you select multiple Monkey (use CTRL button), ' ...
+    'the Protocols Listbox is updated with  ' ...
+    'the list of only the Protocols available for' ... 
+    'all selected Monkeys'  ...
+    ' ' ...
+    '* To RESET your research select Show_All at the top of the List boxes' };
+  end
+
+% STX=['Sel Prot =' handles.Selected_Protocols' char(10) ...
+%     'Sel Monk = ' handles.Selected_Monkeys' ];
 set(handles.Support,'String',STX)
 % ----------
 
@@ -232,7 +248,7 @@ else
         
     end
     
-    NewMonkSel=find(ismember(SMK,MNP)==1)
+    NewMonkSel=find(ismember(MNP,SMK)==1)
     if NewMonkSel==0
         NewMonkSel=1;
     end
@@ -263,27 +279,37 @@ end
 
 % info ------
 if  PRTn==1 % account for Show_All selection (RESET)
-    STX=['HELP'  char(10) '!!! the research was manually resetted !!!' char(10)  ...
+    STX={'HELP' ...
+        '!!! the research was manually resetted !!!'  ...
         '* When you select a Protocol name,' ...
-        ' the Monkey listbox is updated with all the monkey names for which  ' ...
-        'the selected protocl is available' char(10) ...
-        '* To RESET select Show_All at the top of the List boxes'];
+        'the Monkeys listbox is updated with all ' ...
+        'the monkey names for which the selected  ' ...
+        'protocol is available --> Select one or more ' ...
+        'Monkeys (using the CNTRL button) and PUSH UPDATE PARAMETERS button' ...
+        ' ' ...
+       '* To RESET the two lists select Show_All at' ...
+        'the top of the List boxes'};
     
 else
-    STX=['HELP'  char(10) '* When you select a Protocol name,' ...
-        ' the Monkey listbox is updated with all the monkey names for which  ' ...
-        'the selected protocl is available' char(10) ...
-        '* To RESET select Show_All at the top of the List boxes'];
+ STX={'HELP' ...
+        '* When you select a Protocol name,' ...
+        'the Monkeys listbox is updated with all ' ...
+        'the monkey names for which the selected  ' ...
+        'protocl is available --> Select one or more ' ...
+        'Monkeys and PUSH the "UPDATE PARAMETERS" button' ...
+        ' ' ...
+        '* To RESET the two lists, select Show_All at' ...
+        'the top of the List boxes'};
 end
 
-STX=['Sel Prot =' handles.Selected_Protocols' char(10) ...
-    'Sel Monk = ' handles.Selected_Monkeys' ];
+
 set(handles.Support,'String',STX)
 
 % ----------
 
 handles.flag_Create_Tab = 0;
 % SAVE
+
 guidata(hObject, handles);
 
 
@@ -321,23 +347,33 @@ end
 % --- Executes on button press in Update_Parameters.
 function Update_Parameters_Callback(hObject, eventdata, handles)
 handles=guidata(hObject);
-%%
+
 set(handles.figure1,'color',[1 .5 .5])
 
 flagUD = handles.flag_Create_Tab;
 
-if flagUD == 0
-
 Sel_PRT = handles.Selected_Protocols;
 MM = handles.Selected_Monkeys;
 tm = get(handles.MonkeyName,'Value');
- 
 Sel_Monk ={ MM{tm}};
 
+if flagUD == 0
+
 % Info ------------
-STX=['Selection :' char(10) ...
-    'Monkeys: ' Sel_Monk char(10) ...
-    'Protocol:' Sel_PRT(2,:)];
+clear STX
+STX=({'SELECTION : '   ... 
+    'Monkeys: ' Sel_Monk{:}  ...
+    'Protocol:' Sel_PRT{2,:}   ...
+    '----------------'  ...
+    'HELP'  ...
+    'In the top rigth table you can select one or' ...
+    'more parameters from the Options' ...
+    'column (#2) writing them separete by a ' ...
+    'comma within the Selection column (#3)' ...
+    '(replacing the "All") ' ...
+    ' ' ...
+    'To RESET click on the monkey names on' ...
+    'the top left listbox and on the UPDATE button again '});
 
 set(handles.Support,'String',STX)
 %-----------------
@@ -391,21 +427,34 @@ eval(['ParamTab = [' L ']' ]);% full Tab
 ParamTabUD = ParamTab;  % ParamTabUD is the one that will be updated
 handles.ParamTab = ParamTab;
 handles.ParamTabUD = ParamTabUD;
-else %-------------------------------
+else %-----------------------------------------------
+    %--------------------------------------------------
     
 % PARAMETERS TAB USER INPUT    
 % If user change tab field 'Select' update the Tab
 ParamTabUD=handles.ParamTabUD;
+Condx = handles.Cond;
+
+%GET
 TabModif = get(handles.uitable1,'Data');
 FieldCol =  TabModif(:,1);
 SelCol=[{TabModif{:,3}}];
 [a s1 ] = find(strcmp('All',SelCol) ==0);
 if numel(s1)>0 % go on only if user modified the Tab
-InpField = FieldCol(s1)
+InpField = FieldCol(s1);
 
 for i =1:numel(s1)
-InpVal{i} =  str2num(cell2mat(SelCol(s1)));
+CondSel{i} = str2num(Condx{s1(i)}) ; 
+
+InpVal{i} =  str2num(cell2mat(SelCol(s1(i))));
+
+MTCH{i} = isempty(intersect(CondSel{i},InpVal{i}))
 end 
+
+if find([MTCH{:}]==0) ==0
+   errordlg('Your selection is not correct: copy one or more values separated by a comma from the Option column (#2)');
+else 
+
 
 % Find Exp index with selected param value
 for i = 1: numel(InpVal)
@@ -417,13 +466,42 @@ for i = 1: numel(InpVal)
   tm1 = unique( [tm{:}]);
   SelExpInd_All{i} = tm1;
   
+  Msg{i} = cell2mat([InpField{i} '=  '  {num2str(InpVal{i})}])
+
 end
-
-
 % find intersection among exp indexes selected based on different params
 SelExpInd = mintersect(SelExpInd_All{:});
+
+if isempty(SelExpInd )
+     errordlg('There are no experiments matching your selection!');
+else
+    
+
 ParamTabUD = ParamTabUD(SelExpInd);
 handles.ParamTabUD = ParamTabUD;
+
+% Info ------------
+clear STX
+STX={'SELECTION : '   ... 
+    'Monkeys: ' Sel_Monk{:}  ...
+    'Protocol:' Sel_PRT{2,:}   ...
+    'PARAM SELECTION' ...
+    Msg{:} ...
+    '----------------'  ...
+    'HELP'  ...
+    'In the top rigth table you can select one or' ...
+    'more parameters from the Options' ...
+    'column (#2) writing them separete by a ' ...
+    'comma within the Selection column (#3)' ...
+    '(replacing the "All") ' ...
+    ' ' ...
+    'To RESET click on the monkey names on' ...
+    'the top left listbox and on the UPDATE button again '};
+
+set(handles.Support,'String',STX)
+%-----------------
+end
+end
 end
 end % only first time --------------------------------------
 %------------------------------------------------------
@@ -435,7 +513,7 @@ clear Cond SelTab
 for i = 1: size(ParamNames,1 )
     Cond{i} =nan;
  try   
-     tm =num2str([ unique([ParamTabUD.(ParamNames{i})])  ]);
+     tm =num2str([ unique([ParamTabUD.(ParamNames{i})])   ]) ;
       Cond{i} =(tm);
  end
     SelTab{i} ='All' ;
@@ -447,10 +525,13 @@ set(handles.uitable1,'Data',T{:,:} ,'ColumnName',{'Param' , 'Options', 'Select' 
     'ColumnEditable',[false false true],'ColumnWidth',{150 250 140});
 
 % Convert all field to str to display in uitable2
-clear tm
+clear tm aramStructtxt
 for i = 1:size(ParamTabUD,2)
    for y  = 1: size(ParamNames,1 ) 
        tm = num2str([ ParamTabUD(i).(ParamNames{y})  ]);
+       if size(tm,1)>1
+           tm=tm(:)';
+       end
        ParamStructtxt(i).(ParamNames{y})  = tm;
      clear ss1
      ss1= numel(tm)*50;
@@ -463,23 +544,10 @@ ParamTabUDtxt=struct2table( ParamStructtxt);
 
 set(handles.uitable2,'Data',ParamTabUDtxt{:,:} ,'ColumnName',  {ParamNames{:}}, 'ColumnWidth',{ss{:}} );
 set(handles.figure1,'color',[.94 .94 .94])
-%%
 
-%%
-%a=struct2table(ParamTab)
-
-%set(handles.uitable2,'Data',a{:,:})
-%%
-
-
-% PT = uitable
-%
-% CreateExpTab
-% UpdateTable
-% UpdateExpTab
-%set(handles.ExpList, 'String', ParamTab)
-
-
+handles.ParamTabUDtxt = ParamTabUDtxt;
+handles.ParamTabUD = ParamTabUD;
+handles.Cond = Cond;
 guidata(hObject, handles);
 
 

@@ -427,6 +427,7 @@ eval(['ParamTab = [' L ']' ]);% full Tab
 ParamTabUD = ParamTab;  % ParamTabUD is the one that will be updated
 handles.ParamTab = ParamTab;
 handles.ParamTabUD = ParamTabUD;
+handles.Msg{1} = '  ';
 else %-----------------------------------------------
     %--------------------------------------------------
     
@@ -434,6 +435,7 @@ else %-----------------------------------------------
 % If user change tab field 'Select' update the Tab
 ParamTabUD=handles.ParamTabUD;
 Condx = handles.Cond;
+Msg = handles.Msg;
 
 %GET
 TabModif = get(handles.uitable1,'Data');
@@ -448,7 +450,7 @@ CondSel{i} = str2num(Condx{s1(i)}) ;
 
 InpVal{i} =  str2num(cell2mat(SelCol(s1(i))));
 
-MTCH{i} = isempty(intersect(CondSel{i},InpVal{i}))
+MTCH{i} = isempty(intersect(CondSel{i},InpVal{i}));
 end 
 
 if find([MTCH{:}]==0) ==0
@@ -459,17 +461,26 @@ else
 % Find Exp index with selected param value
 for i = 1: numel(InpVal)
   % put together EXP matching multiple selections 'OR'
-  clear tm  
-  for h = 1:size(InpVal{i},2)
-       tm{h} = find ([ParamTabUD.(InpField{i})] == InpVal{i}(h));
+  clear tm tm1
+  for h = 1:size(InpVal{i},2) % test all user selections
+       tmExp=[];
+      ct=0;
+      for e =1:size(ParamTabUD,2) % some fields have more than a single value
+          if find ([ParamTabUD(e).(InpField{i})] == InpVal{i}(h))  > 0
+              ct=ct+1;
+              tmExp(ct) = e;
+          end
+      end
+      tm{h}= tmExp(:)';
   end
   tm1 = unique( [tm{:}]);
   SelExpInd_All{i} = tm1;
   
-  Msg{i} = cell2mat([InpField{i} '=  '  {num2str(InpVal{i})}])
+  Msg{size(Msg,2)+1} = cell2mat([InpField{i} '=  '  {num2str(InpVal{i})}]);
 
 end
 % find intersection among exp indexes selected based on different params
+clear SelExpInd
 SelExpInd = mintersect(SelExpInd_All{:});
 
 if isempty(SelExpInd )
@@ -482,10 +493,10 @@ handles.ParamTabUD = ParamTabUD;
 
 % Info ------------
 clear STX
-STX={'SELECTION : '   ... 
-    'Monkeys: ' Sel_Monk{:}  ...
-    'Protocol:' Sel_PRT{2,:}   ...
-    'PARAM SELECTION' ...
+% 'SELECTION : '   ... 
+%   'Monkeys: ' Sel_Monk{:}  ...
+%     'Protocol:' Sel_PRT{2,:}   ...
+STX={ 'PARAM SELECTION' ...
     Msg{:} ...
     '----------------'  ...
     'HELP'  ...
@@ -500,7 +511,10 @@ STX={'SELECTION : '   ...
 
 set(handles.Support,'String',STX)
 %-----------------
-end
+
+handles.Msg = Msg;
+
+end  % List of exceptions
 end
 end
 end % only first time --------------------------------------

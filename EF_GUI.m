@@ -22,7 +22,7 @@ function varargout = EF_GUI(varargin)
 
 % Edit the above text to modify the response to help EF_GUI
 
-% Last Modified by GUIDE v2.5 17-Apr-2017 16:01:11
+% Last Modified by GUIDE v2.5 21-Apr-2017 11:00:08
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -427,7 +427,7 @@ eval(['ParamTab = [' L ']' ]);% full Tab
 ParamTabUD = ParamTab;  % ParamTabUD is the one that will be updated
 handles.ParamTab = ParamTab;
 handles.ParamTabUD = ParamTabUD;
-handles.Msg{1} = '  ';
+handles.Msg = {'  '};
 else %-----------------------------------------------
     %--------------------------------------------------
     
@@ -521,47 +521,53 @@ end % only first time --------------------------------------
 %------------------------------------------------------
 handles.flag_Create_Tab = 1; % record the tab has already been created for next time the button is pushed
 
-% Generate Selection tab
-ParamNames = fieldnames(ParamTabUD);
-clear Cond SelTab
-for i = 1: size(ParamNames,1 )
-    Cond{i} =nan;
- try   
-     tm =num2str([ unique([ParamTabUD.(ParamNames{i})])   ]) ;
-      Cond{i} =(tm);
- end
-    SelTab{i} ='All' ;
-end
+% % Generate Selection tab
+% ParamNames = fieldnames(ParamTabUD);
+% clear Cond SelTab
+% for i = 1: size(ParamNames,1 )
+%     Cond{i} =nan;
+%  try   
+%      tm =num2str([ unique([ParamTabUD.(ParamNames{i})])   ]) ;
+%       Cond{i} =(tm);
+%  end
+%     SelTab{i} ='All' ;
+% end
+% 
+% T = table(ParamNames, Cond',SelTab');
+% % SET
+% set(handles.uitable1,'Data',T{:,:} ,'ColumnName',{'Param' , 'Options', 'Select' }, ...
+%     'ColumnEditable',[false false true],'ColumnWidth',{150 250 140});
+% 
+% % Convert all field to str to display in uitable2
+% clear tm aramStructtxt
+% for i = 1:size(ParamTabUD,2)
+%    for y  = 1: size(ParamNames,1 ) 
+%        tm = num2str([ ParamTabUD(i).(ParamNames{y})  ]);
+%        if size(tm,1)>1
+%            tm=tm(:)';
+%        end
+%        ParamStructtxt(i).(ParamNames{y})  = tm;
+%      clear ss1
+%      ss1= numel(tm)*50;
+%      ss1(find(ss1>150)) =150;
+%      ss{y} = ss1;
+%    end
+% end
+% 
+% ParamTabUDtxt=struct2table( ParamStructtxt);
+% 
+% set(handles.uitable2,'Data',ParamTabUDtxt{:,:} ,'ColumnName',  {ParamNames{:}}, 'ColumnWidth',{ss{:}} );
 
-T = table(ParamNames, Cond',SelTab');
-% SET
-set(handles.uitable1,'Data',T{:,:} ,'ColumnName',{'Param' , 'Options', 'Select' }, ...
-    'ColumnEditable',[false false true],'ColumnWidth',{150 250 140});
+% 
+% handles.ParamTabUDtxt = ParamTabUDtxt;
+% handles.ParamTabUD = ParamTabUD;
+% handles.Cond = Cond;
 
-% Convert all field to str to display in uitable2
-clear tm aramStructtxt
-for i = 1:size(ParamTabUD,2)
-   for y  = 1: size(ParamNames,1 ) 
-       tm = num2str([ ParamTabUD(i).(ParamNames{y})  ]);
-       if size(tm,1)>1
-           tm=tm(:)';
-       end
-       ParamStructtxt(i).(ParamNames{y})  = tm;
-     clear ss1
-     ss1= numel(tm)*50;
-     ss1(find(ss1>150)) =150;
-     ss{y} = ss1;
-   end
-end
-
-ParamTabUDtxt=struct2table( ParamStructtxt);
-
-set(handles.uitable2,'Data',ParamTabUDtxt{:,:} ,'ColumnName',  {ParamNames{:}}, 'ColumnWidth',{ss{:}} );
-set(handles.figure1,'color',[.94 .94 .94])
-
+[ParamTabUD ParamTabUDtxt Cond]=UpdateTabs(ParamTabUD,handles);
 handles.ParamTabUDtxt = ParamTabUDtxt;
 handles.ParamTabUD = ParamTabUD;
 handles.Cond = Cond;
+set(handles.figure1,'color',[.94 .94 .94])
 guidata(hObject, handles);
 
 
@@ -583,3 +589,33 @@ function Update_Database_Callback(hObject, eventdata, handles)
 CreateProtocolSummary
 
 %save LastUpdate file
+
+
+% --- Executes on button press in ResetTab.
+function ResetTab_Callback(hObject, eventdata, handles)
+set(handles.figure1,'color',[1 .5 .5])
+ParamTabUD = handles.ParamTab; 
+[ParamTabUD ParamTabUDtxt Cond]=UpdateTabs(ParamTabUD,handles);
+handles.ParamTabUDtxt = ParamTabUDtxt;
+handles.ParamTabUD = ParamTabUD;
+handles.Cond = Cond; 
+set(handles.figure1,'color',[.94 .94 .94]) 
+%- info --
+STX={ 'YOU HAVE RESET YOUR RESEARCH IN THE TAB!!!' ...
+    '----------------'  ...
+    'HELP'  ...
+    'In the top rigth table you can select one or' ...
+    'more parameters from the Options' ...
+    'column (#2) writing them separete by a ' ...
+    'comma within the Selection column (#3)' ...
+    '(replacing the "All") ' ...
+    ' ' ...
+    'To RESET click on the monkey names on' ...
+    'the top left listbox and on the UPDATE button again '};
+
+set(handles.Support,'String',STX)
+% ----
+guidata(hObject, handles);
+ 
+ 
+ 

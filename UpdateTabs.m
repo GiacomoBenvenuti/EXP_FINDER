@@ -6,10 +6,32 @@ ParamNames = fieldnames(ParamTabUD);
 clear Cond SelTab
 for i = 1: size(ParamNames,1 )
     Cond{i} =nan;
- try   
-     tm =num2str([ unique([ParamTabUD.(ParamNames{i})])   ]) ;
-      Cond{i} =(tm);
- end
+
+     
+     if size(ParamTabUD(1).(ParamNames{i}),1) >1
+         clear pp
+         for k = 1:size(ParamTabUD,2)
+              pp{k} = num2str(unique(complex(ParamTabUD(k).(ParamNames{i})(1,:),  ParamTabUD(k).(ParamNames{i})(2,:))));
+         end 
+              tm = [unique(pp)];
+       else
+     
+        if  isstr(ParamTabUD(1).(ParamNames{i})  )
+              tm =[ unique(  {ParamTabUD.(ParamNames{i})}  )   ] ;
+        else
+          tm =num2str([ unique(  [ParamTabUD.(ParamNames{i})]  )   ]) ;
+        end
+    % tm =num2str([ unique([ParamTabUD.(ParamNames{i})])   ]) ;
+     
+     end
+     
+     if iscell(tm)
+      Cond{i} =[tm{:}];
+     else
+       Cond{i} =tm;    
+     end
+      
+ 
     SelTab{i} ='All' ;
 end
 

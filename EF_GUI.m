@@ -22,7 +22,7 @@ function varargout = EF_GUI(varargin)
 
 % Edit the above text to modify the response to help EF_GUI
 
-% Last Modified by GUIDE v2.5 21-Apr-2017 11:00:08
+% Last Modified by GUIDE v2.5 23-Apr-2017 09:03:08
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -248,7 +248,7 @@ else
         
     end
     
-    NewMonkSel=find(ismember(MNP,SMK)==1)
+    NewMonkSel=find(ismember(['Show_All'  MNP],SMK)==1)
     if NewMonkSel==0
         NewMonkSel=1;
     end
@@ -372,8 +372,7 @@ STX=({'SELECTION : '   ...
     'comma within the Selection column (#3)' ...
     '(replacing the "All") ' ...
     ' ' ...
-    'To RESET click on the monkey names on' ...
-    'the top left listbox and on the UPDATE button again '});
+    'To RESET click  the RESET TAB button uder the Tab '});
 
 set(handles.Support,'String',STX)
 %-----------------
@@ -506,8 +505,10 @@ STX={ 'PARAM SELECTION' ...
     'comma within the Selection column (#3)' ...
     '(replacing the "All") ' ...
     ' ' ...
-    'To RESET click on the monkey names on' ...
-    'the top left listbox and on the UPDATE button again '};
+    'If you click on a field of the Option column' ...
+    'you will see here the full content' ...
+    ' ' ...
+    'To RESET click the RESET TAB button uder the Tab '};
 
 set(handles.Support,'String',STX)
 %-----------------
@@ -573,9 +574,12 @@ guidata(hObject, handles);
 
 % --- Executes on button press in Print.
 function Print_Callback(hObject, eventdata, handles)
-% hObject    handle to Print (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% Pushing the EXPORT button you just display the export menu
+handles=guidata(hObject);
+set(handles.uitable1,'Visible','off')
+set(handles.DispFoldExport,'String',[pwd '/ExpList'])
+guidata(hObject, handles);
+
 
 
 % --- Executes on button press in Update_Database.
@@ -599,7 +603,7 @@ ParamTabUD = handles.ParamTab;
 handles.ParamTabUDtxt = ParamTabUDtxt;
 handles.ParamTabUD = ParamTabUD;
 handles.Cond = Cond; 
-set(handles.figure1,'color',[.94 .94 .94]) 
+
 %- info --
 STX={ 'YOU HAVE RESET YOUR RESEARCH IN THE TAB!!!' ...
     '----------------'  ...
@@ -610,12 +614,102 @@ STX={ 'YOU HAVE RESET YOUR RESEARCH IN THE TAB!!!' ...
     'comma within the Selection column (#3)' ...
     '(replacing the "All") ' ...
     ' ' ...
+    'If you click on a field of the Option column' ...
+    'you will see here the full content' ...
+    ' ' ...
     'To RESET click on the monkey names on' ...
     'the top left listbox and on the UPDATE button again '};
 
 set(handles.Support,'String',STX)
 % ----
+handles.Msg = '';
+set(handles.figure1,'color',[.94 .94 .94]) 
 guidata(hObject, handles);
  
  
  
+
+
+% --- Executes when entered data in editable cell(s) in uitable1.
+function uitable1_CellEditCallback(hObject, eventdata, handles)
+% hObject    handle to uitable1 (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
+%	Indices: row and column indices of the cell(s) edited
+%	PreviousData: previous data for the cell(s) edited
+%	EditData: string(s) entered by the user
+%	NewData: EditData or its converted form set on the Data property. Empty if Data was not changed
+%	Error: error string when failed to convert EditData to appropriate value for Data
+% handles    structure with handles and user data (see GUIDATA)
+          
+
+
+% --- Executes when selected cell(s) is changed in uitable1.
+function uitable1_CellSelectionCallback(hObject, eventdata, handles)
+% hObject    handle to uitable1 (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
+%	Indices: row and column indices of the cell(s) currently selecteds
+% handles    structure with handles and user data (see GUIDATA)
+Cond=handles.Cond;
+tm = eventdata.Indices;
+if ~isempty(tm)
+Col= tm(2);
+
+if Col ==2
+CellID =  tm(1)
+
+ STX={ 'Display the full content of the Option column:' ...
+     Cond{CellID}};
+
+set(handles.Support,'String',STX)   
+end
+    
+end
+
+
+
+function DispFoldExport_Callback(hObject, eventdata, handles)
+% hObject    handle to DispFoldExport (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of DispFoldExport as text
+%        str2double(get(hObject,'String')) returns contents of DispFoldExport as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function DispFoldExport_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to DispFoldExport (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in BrowseFoldExport.
+function BrowseFoldExport_Callback(hObject, eventdata, handles)
+handles=guidata(hObject);
+EF = uigetdir(pwd);
+set(handles.DispFoldExport,'String',[EF '/ExpList'])
+guidata(hObject, handles);
+
+
+% --- Executes on button press in ExpTabMat.
+function ExpTabMat_Callback(hObject, eventdata, handles)
+handles=guidata(hObject);
+tm = get(handles.DispFoldExport,'String')
+T = handles.ParamTabUD; 
+save([tm '.mat'],'T');
+
+
+% --- Executes on button press in pushbutton10.
+function pushbutton10_Callback(hObject, eventdata, handles)
+% EXPORT to Excel
+handles=guidata(hObject);
+
+% --- Executes on button press in BackToTable.
+function BackToTable_Callback(hObject, eventdata, handles)
+set(handles.uitable1,'Visible','on')

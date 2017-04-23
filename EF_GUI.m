@@ -48,14 +48,19 @@ end
 function EF_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Initialize Monkeys and Protocols lists
 
-s= what(['DATABASE']);
-cd(s.path);
+FN = mfilename('fullpath')
+tm = FN(1:size(FN,2)-6);
+MyDataFolder = [tm 'DATABASE'];
+
+cd (MyDataFolder)
 handles.output = hObject;
 [MonkName, ProtNames,MN] = initGUI;
 
 % Set
 set(handles.MonkeyName,'String', ['Show_All' MonkName],'max',size(MN,2));
 set(handles.Protocol,'String', ['Show_All' ProtNames],'max',size(MN,2));
+load Last_Update
+set(handles.LastUD,'String',['Last UPDATE ' Last_Update])
 
 % info ------
 STX=['HELP'  char(10) 'To start you have 2 options: ' char(10)... 
@@ -73,6 +78,7 @@ handles.Selected_Monkeys = ['Show_All' MonkName]';
 handles.Selected_Protocols = ['Show_All' ; ProtNames'];
 handles.FlagProtSelection=0;
 handles.flag_Create_Tab = 0;
+handles.MyDataFolder = MyDataFolder;
 guidata(hObject, handles);
 
 
@@ -584,16 +590,62 @@ guidata(hObject, handles);
 
 % --- Executes on button press in Update_Database.
 function Update_Database_Callback(hObject, eventdata, handles)
+aa = questdlg(['You are about to update the internal .log files database. '...
+    'This operation can take several minutes. Are you sure you want to continue?'])
+if strcmp(aa,'Yes')
+set(handles.figure1,'color',[1 .5 .5])
+
+
+ %- info --
+STX={ 'YOU ARE UPDATING THE INTERNAL .log FILES DATABASE. PLEASE WAIT... '};
+set(handles.Support,'String',STX)
+tic
+% ----
+
 % Select /data folder
+DataDir = uigetdir(pwd);
+ %- info --
+STX={ 'YOU ARE UPDATING THE INTERNAL .log FILES DATABASE. PLEASE WAIT... ' ...
+    '' ...
+    'Data folder selected: ' DataDir};
+set(handles.Support,'String',STX)
+
+tic
+% ----
 
 % Import all .log files
+ [goood, baad]= ImportLogFiles(DataDir,handles.MyDataFolder,handles)
+
+ 
+ STX={num2str(ctg) ' fiels have been successfully copied' ...
+     'The following files have NOT been copied : ' ....
+     baad{:}};
+  set(handles.Support,'String',STX)
+           % ----------
 
 % Tempo??
 
-CreateProtocolSummary
+%CreateProtocolSummary
 
 %save LastUpdate file
 
+dateLastUD = date
+set(handles.LastUD,'String',['Last UPDATE ' dateLastUD])
+durr = toc;
+STX={ 'THE DATABASE HAS BEEN SUCCEFFULLY UPDATED!!' ...
+    '' ...
+   [ 'The process took ' num2str(durr,2) ' seconds' ] ...
+   '' ...
+   'the "Last Update" date on the top-right corner of the menu has been updated with today date '};
+set(handles.Support,'String',STX)
+else
+ %- info --
+STX={ 'YOU HAVE CANCELED THE DATABASE UPDATE '};
+set(handles.Support,'String',STX)
+% ----   
+    
+end
+set(handles.figure1,'color',[.94 .94 .94]);
 
 % --- Executes on button press in ResetTab.
 function ResetTab_Callback(hObject, eventdata, handles)
@@ -702,13 +754,32 @@ function ExpTabMat_Callback(hObject, eventdata, handles)
 handles=guidata(hObject);
 tm = get(handles.DispFoldExport,'String')
 T = handles.ParamTabUD; 
-save([tm '.mat'],'T');
+T2=struct2table(T);
+save([tm '.mat'],'T2');
+% ---info -------------
+STX={'HELP' ...
+    'Congratulations, the experiments list' ...
+    'has been saved as a .mat file'};
+set(handles.Support,'String',STX)
+%-------------------
 
 
 % --- Executes on button press in pushbutton10.
 function pushbutton10_Callback(hObject, eventdata, handles)
 % EXPORT to Excel
+rispos = questdlg('This function is available only on PC where Excel is installed. Do you want to continue?');
+if strcmp(rispos,'Yes')
 handles=guidata(hObject);
+tm = get(handles.DispFoldExport,'String')
+T = handles.ParamTabUDtxt; 
+T3=table2cell(T);
+xlswrite([tm '.xls'],T3);
+% ---info -------------
+STX={'Congratulations, the experiments list' ...
+    'has been saved as a .xls file'};
+set(handles.Support,'String',STX)
+%-------------------
+end
 
 % --- Executes on button press in BackToTable.
 function BackToTable_Callback(hObject, eventdata, handles)

@@ -3,7 +3,7 @@
 function CreateProtocolSummary
 % Prot : Stimulation protocol number
 %  EXP_FINDER.CreateProtocolSummary
-s=what('+EXP_FINDER');
+s=what('EXP_FINDER');
 cd (s.path)
 cd DATABASE
 
@@ -86,11 +86,13 @@ for Monk =1:size(MN,1) % select monkey based on MonkName
                    % tm = strfind(A(tID(h):tID(h)+100),A(tID(h) : tID(h)+5 ));
                      tm = strfind(A(tID(h):tID(h)+100),char(10) );
                  if  isempty(tm)
-                     A(tID(h):tID(h)+100)
+                     A(tID(h):tID(h)+100);
                  else
                   
                     tmSTR = A(tID(h) : tID(h)+tm(1)-1);
                     tmSTR(isspace(tmSTR))=[];
+                    po = strfind(tmSTR,'.');
+                    tmSTR(1:po) = [];
                     eval(['monk(k).' tmSTR ]) ;
                  end
                 end

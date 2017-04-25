@@ -1,8 +1,8 @@
 function [goood , baad]=ImportLogFiles(DataDir,MyDataFolder,handles)
 % Import .log file from DataDir to MyDataFolder
 FF = dir(DataDir);
-goood = nan;
-baad=nan;
+goood{1} = nan;
+baad{1}=nan;
   ctg = 0; % counters
    ctb=0;
 for i =1:size(FF,1) % go through all subfolders
@@ -58,8 +58,8 @@ for i =1:size(FF,1) % go through all subfolders
            if ~exist(destt)
               succ = copyfile([DataDir  filesep FF(i).name filesep tm(y).name],destt) ;
               if succ ==1
-                  ctg=ctg+ctg;
-                  goood{gtc} =tm(y).name;
+                  ctg=ctg+1;
+                  goood{ctg} =tm(y).name;
               else
                   ctb=ctb+ctb;
                   baad{ctb} =tm(y).name;

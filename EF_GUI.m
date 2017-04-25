@@ -528,49 +528,10 @@ end % only first time --------------------------------------
 %------------------------------------------------------
 handles.flag_Create_Tab = 1; % record the tab has already been created for next time the button is pushed
 
-% % Generate Selection tab
-% ParamNames = fieldnames(ParamTabUD);
-% clear Cond SelTab
-% for i = 1: size(ParamNames,1 )
-%     Cond{i} =nan;
-%  try   
-%      tm =num2str([ unique([ParamTabUD.(ParamNames{i})])   ]) ;
-%       Cond{i} =(tm);
-%  end
-%     SelTab{i} ='All' ;
-% end
-% 
-% T = table(ParamNames, Cond',SelTab');
-% % SET
-% set(handles.uitable1,'Data',T{:,:} ,'ColumnName',{'Param' , 'Options', 'Select' }, ...
-%     'ColumnEditable',[false false true],'ColumnWidth',{150 250 140});
-% 
-% % Convert all field to str to display in uitable2
-% clear tm aramStructtxt
-% for i = 1:size(ParamTabUD,2)
-%    for y  = 1: size(ParamNames,1 ) 
-%        tm = num2str([ ParamTabUD(i).(ParamNames{y})  ]);
-%        if size(tm,1)>1
-%            tm=tm(:)';
-%        end
-%        ParamStructtxt(i).(ParamNames{y})  = tm;
-%      clear ss1
-%      ss1= numel(tm)*50;
-%      ss1(find(ss1>150)) =150;
-%      ss{y} = ss1;
-%    end
-% end
-% 
-% ParamTabUDtxt=struct2table( ParamStructtxt);
-% 
-% set(handles.uitable2,'Data',ParamTabUDtxt{:,:} ,'ColumnName',  {ParamNames{:}}, 'ColumnWidth',{ss{:}} );
-
-% 
-% handles.ParamTabUDtxt = ParamTabUDtxt;
-% handles.ParamTabUD = ParamTabUD;
-% handles.Cond = Cond;
-
+% update tab
 [ParamTabUD ParamTabUDtxt Cond]=UpdateTabs(ParamTabUD,handles);
+
+% Save
 handles.ParamTabUDtxt = ParamTabUDtxt;
 handles.ParamTabUD = ParamTabUD;
 handles.Cond = Cond;
@@ -617,7 +578,7 @@ tic
  [goood, baad]= ImportLogFiles(DataDir,handles.MyDataFolder,handles)
 
  
- STX={num2str(ctg) ' fiels have been successfully copied' ...
+ STX={size(goood,2) ' fiels have been successfully copied' ...
      'The following files have NOT been copied : ' ....
      baad{:}};
   set(handles.Support,'String',STX)
@@ -627,10 +588,12 @@ tic
 
 %CreateProtocolSummary
 
-%save LastUpdate file
 
-dateLastUD = date
-set(handles.LastUD,'String',['Last UPDATE ' dateLastUD])
+% last update 
+Last_Update= date
+set(handles.LastUD,'String',['Last UPDATE ' Last_Update])
+save(('Last_Update','Last_Update')
+
 durr = toc;
 STX={ 'THE DATABASE HAS BEEN SUCCEFFULLY UPDATED!!' ...
     '' ...
@@ -638,6 +601,7 @@ STX={ 'THE DATABASE HAS BEEN SUCCEFFULLY UPDATED!!' ...
    '' ...
    'the "Last Update" date on the top-right corner of the menu has been updated with today date '};
 set(handles.Support,'String',STX)
+
 else
  %- info --
 STX={ 'YOU HAVE CANCELED THE DATABASE UPDATE '};

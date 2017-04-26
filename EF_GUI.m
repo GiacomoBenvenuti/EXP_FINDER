@@ -65,7 +65,7 @@ set(handles.LastUD,'String',['Last UPDATE ' Last_Update])
 % info ------
 STX=['HELP'  char(10) 'To start you have 2 options: ' char(10)... 
     ' 1. Select one or more Monkey names on the top left listbox' char(10)  ' 2. Select one Protocol on the listbox beside that' ...
-    char (10)  char(10) '    ------------------- ' char(10) 'Database last update 6/10/2016'];
+    char (10)  char(10)];
 
 set(handles.Support,'String',STX)
 % ----------
@@ -79,6 +79,8 @@ handles.Selected_Protocols = ['Show_All' ; ProtNames'];
 handles.FlagProtSelection=0;
 handles.flag_Create_Tab = 0;
 handles.MyDataFolder = MyDataFolder;
+
+
 guidata(hObject, handles);
 
 
@@ -604,6 +606,34 @@ STX={ 'THE DATABASE HAS BEEN SUCCEFFULLY UPDATED!!' ...
    '' ...
    'the "Last Update" date on the top-right corner of the menu has been updated with today date '};
 set(handles.Support,'String',STX)
+
+% Update the menu
+[MonkName, ProtNames,MN] = initGUI;
+
+% Set
+set(handles.MonkeyName,'String', ['Show_All' MonkName],'max',size(MN,2));
+set(handles.Protocol,'String', ['Show_All' ProtNames],'max',size(MN,2));
+load Last_Update
+set(handles.LastUD,'String',['Last UPDATE ' Last_Update])
+
+% info ------
+STX=['HELP'  char(10) 'To start you have 2 options: ' char(10)... 
+    ' 1. Select one or more Monkey names on the top left listbox' char(10)  ' 2. Select one Protocol on the listbox beside that' ...
+    char (10)  char(10)'];
+
+set(handles.Support,'String',STX)
+% ----------
+
+% Save
+handles.MonkNameAll = ['Show_All' MonkName]';
+handles.ProtName = ['Show_All'  ProtNames]';
+
+handles.Selected_Monkeys = ['Show_All' MonkName]';
+handles.Selected_Protocols = ['Show_All' ; ProtNames'];
+handles.FlagProtSelection=0;
+handles.flag_Create_Tab = 0;
+handles.MyDataFolder = MyDataFolder;
+guidata(hObject, handles);
 
 else
  %- info --

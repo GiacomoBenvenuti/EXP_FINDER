@@ -8,7 +8,7 @@ cd (s.path)
 cd DATABASE
 
 %------------------------------------------
-wb = waitbar(0,'Please wait...');
+wb = waitbar(0,'Create Paramers database. Please wait...');
 
 % Generate monkey list
 clear MN MN2  MonkName
@@ -56,7 +56,8 @@ for Monk =1:size(MN,1) % select monkey based on MonkName
               
                 if ~isempty(blkList{k})
                 clear A tm fns
-                fns = [  MonkName{Monk} '/' blkList{k} '.log']  ;
+              %  fns = [  MonkName{Monk} '/' blkList{k} '.log']  ;
+                fns = [  MonkName{Monk} '/' blkList{k} ]  ;
                 tm = find(isspace(fns)==1,1)-1; % Some paths have a space at the end that must be removed
                 if isempty(tm)
                     tm = size(fns,2);

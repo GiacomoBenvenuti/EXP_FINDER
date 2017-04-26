@@ -1,7 +1,9 @@
-%% PROTOCOLS CONDITIONS SUMMARY
-
 function CreateProtocolSummary
-% Prot : Stimulation protocol number
+% Generate the parameters matrixes for the protocol 
+% foldert DATABSE/PRT_ProtocolName
+% files BartFlashGratings.mat
+% by GB
+
 %  EXP_FINDER.CreateProtocolSummary
 s=what('EXP_FINDER');
 cd (s.path)

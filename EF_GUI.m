@@ -573,9 +573,9 @@ set(handles.Support,'String',STX)
 
 tic
 % ----
-
-% Import all .log files
- [goood, baad]= ImportLogFiles(DataDir,handles.MyDataFolder,handles)
+MyDataFolder=handles.MyDataFolder;
+%%% Import all .log files  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ [goood, baad]= ImportLogFiles(DataDir,MyDataFolder,handles);
 
  
  STX={size(goood,2) ' fiels have been successfully copied' ...
@@ -584,15 +584,18 @@ tic
   set(handles.Support,'String',STX)
            % ----------
 
-% Tempo??
+%%% Create Monkey protocols files %%%%%%%%%%%%%%%%%%%%
+TempoDataSummary(MyDataFolder);
 
-%CreateProtocolSummary
+
+%%% Create Protocols parameters list %%%%%%%%%%%%%%%%%%%%
+CreateProtocolSummary;
 
 
-% last update 
+% disaply and save last update date 
 Last_Update= date
 set(handles.LastUD,'String',['Last UPDATE ' Last_Update])
-save(('Last_Update','Last_Update')
+save('Last_Update','Last_Update')
 
 durr = toc;
 STX={ 'THE DATABASE HAS BEEN SUCCEFFULLY UPDATED!!' ...

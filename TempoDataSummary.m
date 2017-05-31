@@ -8,46 +8,25 @@ function TempoDataSummary(DataFolder)
 
 
 % Find Mokeyname from folders names
-clear MonkName
-myfold = dir(DataFolder);
+myfold = dir([DataFolder filesep '*LogAddress.mat']);
 a={myfold.name};
-b = strfind([myfold.isdir],1);
-xx = {a{b}};
-c= strfind (xx,'PRT');
-ct = 0 ;
-for q = 1:size(c,2)
-    if isempty(c{q})
-        if numel( xx{q} )>2
-            ct=ct+1;
-            MonkName{ct} = xx{q}
-        end
-    end
-end
-
+           
             
-            
-for Monk =1:size(MonkName,2)
+for i =1:size(a,2)
     
-    clear pathh
-    pathh = [DataFolder filesep MonkName{Monk} filesep];
-    fn1 = dir([pathh '**']); % Load all data name
-    fn = {fn1.name};
-    bb(1)=find(strcmp(fn,'.')==1);
-    bb(2)=find(strcmp(fn,'..')==1);
-    fn(bb(:)) =[];
-   % eval(['clear ' MonkName{Monk}]);
-    
+load([DataFolder filesep a{i}])
+fn = LogAddress;
     
     % MONKEY PROTOCOLS SUMMARY
     % go through all experiment and generate a structure var
     % with a field for each protocol and the list of blocks id
     clear AllProt
     ctt=0;
-    for i =1:size(fn,2) % go through all experiments
+    for y =1:size(fn,2) % go through all experiments
         clear A tm
-        if isempty(strfind(fn{i}(1),'.'))
-          ctt=ctt+1;
-        A = fileread([pathh  fn{i}]);
+        if isempty(strfind(fn{y}(1),'.'))
+         ctt=ctt+1;
+        A = fileread( fn{y});
         tstart = strfind(A,'ProtocolName=') + numel('ProtocolName=')+1;
         tend = strfind(A(tstart:tstart+50),'''') + tstart-2;
         
@@ -55,28 +34,31 @@ for Monk =1:size(MonkName,2)
         end
     end
     
+    clear AP
     [AP x APN]= unique(AllProt);
     clear Plist
     
-    for i = 1:size(AP,2)
+    for y = 1:size(AP,2)
         clear tmp tmp2
-        AP{i}(isspace(AP{i}))=[];
-        AP{i}(strfind(AP{i},'-'))=[];
-        tmp = find(APN==i);
+        AP{y}(isspace(AP{y}))=[];
+        AP{y}(strfind(AP{y},'-'))=[];
+        tmp = find(APN==y);
         if size(tmp,1) >1
             tmp2 = tmp';
         else
             tmp2=tmp;
         end
-        if ~isempty(AP{i})
-            eval(['Plist.' AP{i} ' = {fn{tmp2}}']);
+        if ~isempty(AP{y})
+            eval(['Plist.' AP{y} ' = {fn{tmp2}}']);
         end
     end
     
-    eval([MonkName{Monk} 'PList= Plist']);
+    tm = size(a{i},2);
+    MonkName = a{i}(1:tm-14);  
+    eval([MonkName 'PList= Plist']);
     
     save([DataFolder filesep...
-        MonkName{Monk} 'PList'], [MonkName{Monk} 'PList'] )
+        MonkName 'PList'], [MonkName 'PList'] )
 end
 
 end

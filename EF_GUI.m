@@ -558,7 +558,6 @@ aa = questdlg(['You are about to update the internal .log files database. '...
 if strcmp(aa,'Yes')
 set(handles.figure1,'color',[1 .5 .5])
 
-
  %- info --
 STX={ 'YOU ARE UPDATING THE INTERNAL .log FILES DATABASE. PLEASE WAIT... '};
 set(handles.Support,'String',STX)
@@ -577,13 +576,16 @@ tic
 % ----
 MyDataFolder=handles.MyDataFolder;
 %%% Import all .log files  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- [goood, baad]= ImportLogFiles(DataDir,MyDataFolder,handles);
-
+ % [goood, baad]= ImportLogFiles(DataDir,MyDataFolder,handles);
+[changed , notchanged] =CreateLogFilesAddressLists(DataDir,MyDataFolder,handles);
  
- STX={size(goood,2) ' fiels have been successfully copied' ...
-     'The following files have NOT been copied : ' ....
-     baad{:}};
-  set(handles.Support,'String',STX)
+ STX={'' ...
+     [num2str(size(changed,2)) ' Lists have been successfully created/updated:'] ...
+     changed{:} ...
+     '' ...
+     'The following Lists have NOT been updated : ' ....
+     notchanged{:}};
+      set(handles.Support,'String',STX)
            % ----------
 
 %%% Create Monkey protocols files %%%%%%%%%%%%%%%%%%%%
@@ -591,7 +593,7 @@ TempoDataSummary(MyDataFolder);
 
 
 %%% Create Protocols parameters list %%%%%%%%%%%%%%%%%%%%
-CreateProtocolSummary;
+CreateProtocolSummary(MyDataFolder);
 
 
 % disaply and save last update date 
@@ -637,10 +639,13 @@ guidata(hObject, handles);
 
 else
  %- info --
-STX={ 'YOU HAVE CANCELED THE DATABASE UPDATE '};
+STX={ '' ...
+    'YOU HAVE CANCELED THE DATABASE UPDATE '};
 set(handles.Support,'String',STX)
 % ----   
-    
+ 
+
+
 end
 set(handles.figure1,'color',[.94 .94 .94]);
 
@@ -672,9 +677,9 @@ STX={ 'YOU HAVE RESET YOUR RESEARCH IN THE TAB!!!' ...
 set(handles.Support,'String',STX)
 % ----
 handles.Msg = '';
-set(handles.figure1,'color',[.94 .94 .94]) 
+
 guidata(hObject, handles);
- 
+set(handles.figure1,'color',[.94 .94 .94])  
  
  
 

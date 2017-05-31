@@ -1,13 +1,13 @@
-function CreateProtocolSummary
+function CreateProtocolSummary(MyDataFolder)
 % Generate the parameters matrixes for the protocol 
 % foldert DATABSE/PRT_ProtocolName
 % files BartFlashGratings.mat
 % by GB
 
 %  EXP_FINDER.CreateProtocolSummary
-s=what('EXP_FINDER');
-cd (s.path)
-cd DATABASE
+% s=what('EXP_FINDER');
+% cd (s.path)
+cd(MyDataFolder)
 
 %------------------------------------------
 wb = waitbar(0,'Create Paramers database. Please wait...');
@@ -30,9 +30,15 @@ for i = 1:size(MN2,2)
     PRT{i}=tm;
 end
 
-
+myfold = dir( '*LogAddress.mat');
+a={myfold.name};
+           
 for Monk =1:size(MN,1) % select monkey based on MonkName
        waitbar(Monk/size(MonkName,2))
+       
+      load(a{Monk})
+      fn = LogAddress;
+       
     for p=1: size(PRT{Monk},1)
         
         if exist(['PRT_'  PRT{Monk}{p}])==0
@@ -49,17 +55,15 @@ for Monk =1:size(MN,1) % select monkey based on MonkName
         
         if cell2mat(f2)>0
             eval([ 'blkList = '  MonkName{Monk} 'PList.' PRT{Monk}{p}])
-           
-           
-            
-             ProtCategories = {'ExptInfo.', 'Conditions.'}
+          
+             ProtCategories = {'ExptInfo.', 'Conditions.'} % this is something that could be cahnged by the user
             clear monk
             for k =1:size(blkList,2)
               
                 if ~isempty(blkList{k})
                 clear A tm fns
               %  fns = [  MonkName{Monk} '/' blkList{k} '.log']  ;
-                fns = [  MonkName{Monk} '/' blkList{k} ]  ;
+                fns = blkList{k};%  [  MonkName{Monk} '/' blkList{k} ]  ;
                 tm = find(isspace(fns)==1,1)-1; % Some paths have a space at the end that must be removed
                 if isempty(tm)
                     tm = size(fns,2);

@@ -7,7 +7,8 @@ FF = dir(DataDir);
 ctg = 0; % counters
 ctb=0;
 for i =1:size(FF,1) % go through all subfolders (MonkeyNames)
-    if numel(FF(i).name)>3
+    if isempty(strfind(FF(i).name,'.'))
+    %     if numel(FF(i).name)>3
         ffn =FF(i).name;
         flag = 1;
         % create a backup file if a list already exist
@@ -41,20 +42,35 @@ for i =1:size(FF,1) % go through all subfolders (MonkeyNames)
             
             % Check if filename address exist in the adressess file, if not copy it
             
-            % find all log files in the current folder
+            % find all log files in the current folder and subfolders
+            L1=[]; L2=[]; L3=[];
+            try
+             ff= ls([DataDir  filesep FF(i).name filesep '*.log'],'-1' )
+            L1 =strsplit(ff);
+            end
+            try
+            ff= ls([DataDir  filesep FF(i).name filesep '**' filesep '*.log'],'-1' )
+            L2 =strsplit(ff);
+            end
+            try
+            ff= ls([DataDir  filesep FF(i).name filesep '**' filesep  '**' filesep '*.log'],'-1' )
+            L3 =strsplit(ff);
+            end
             
-            tm= dir([DataDir  filesep FF(i).name filesep '*log'] )
-            
-            clear   LogAddress
-            for y = 1:size(tm,1)
-                LogFileID = [DataDir  filesep FF(i).name filesep tm(y).name];
-                %  FileMatch = strfind(LogAddress, LogFileID); % check if the logfile address is already in the list
-                LogAddress{y} = LogFileID;
-            end  % folder is good
+            try 
+             LogAddress =cat(2,L1,L2,L3);
+
+%             clear   LogAddress
+%             for y = 1:size(tm,2)
+%                 LogFileID = tm{y};
+%                 %  FileMatch = strfind(LogAddress, LogFileID); % check if the logfile address is already in the list
+%                 LogAddress{y} = LogFileID;
+%             end  % folder is good
             
             save([MyDataFolder filesep ffn  'LogAddress.mat'], 'LogAddress');
             ctg=ctg+1;
             changed{ctg} =[ffn  'LogAddress.mat'];
+            end
         end % folders
         
     end

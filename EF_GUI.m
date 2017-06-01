@@ -22,7 +22,7 @@ function varargout = EF_GUI(varargin)
 
 % Edit the above text to modify the response to help EF_GUI
 
-% Last Modified by GUIDE v2.5 23-Apr-2017 09:03:08
+% Last Modified by GUIDE v2.5 31-May-2017 18:18:17
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -365,6 +365,11 @@ MM = handles.Selected_Monkeys;
 tm = get(handles.MonkeyName,'Value');
 Sel_Monk ={ MM{tm}};
 
+if sum(ismember(Sel_Monk,'Show_All'))>0
+ Sel_Monk = setdiff(Sel_Monk,'Show_All');
+end
+    
+    
 if flagUD == 0
 
 % Info ------------
@@ -397,7 +402,7 @@ for i = 1:size(Sel_Monk,2)
     s = size(mm{1},2);
     fn{i} =fieldnames(mm{i});
     nf(i)=size( fn{i},1);
-    txx = [' mm{' num2str(i) '}']
+    txx = [' mm{' num2str(i) '}'];
     L(1,(1:numel(txx))+(numel(txx)*(i-1) ) ) = txx ;
 end
 
@@ -547,6 +552,16 @@ function Print_Callback(hObject, eventdata, handles)
 handles=guidata(hObject);
 set(handles.uitable1,'Visible','off')
 set(handles.DispFoldExport,'String',[pwd '/ExpList'])
+
+STX={'HELP' ...
+    'You can select the Experiments you want' ...
+    'to save directly from the Exp list using the'...
+    'mouse right button and the SHIFT button for '...
+    'multiple selections'... 
+    'If you want to select all experimetns click on SELECT ALL'};
+set(handles.Support,'String',STX)
+
+
 guidata(hObject, handles);
 
 
@@ -755,8 +770,9 @@ guidata(hObject, handles);
 function ExpTabMat_Callback(hObject, eventdata, handles)
 handles=guidata(hObject);
 tm = get(handles.DispFoldExport,'String')
-T = handles.ParamTabUD; 
-T2=struct2table(T);
+SelID = handles.SelectedExperimentsID;
+T = handles.ParamTabUD(1,SelID); 
+T2=struct2table(T)
 save([tm '.mat'],'T2');
 % ---info -------------
 STX={'HELP' ...
@@ -786,3 +802,36 @@ end
 % --- Executes on button press in BackToTable.
 function BackToTable_Callback(hObject, eventdata, handles)
 set(handles.uitable1,'Visible','on')
+
+
+
+
+% --- Executes when selected cell(s) is changed in uitable2.
+function uitable2_CellSelectionCallback(hObject, eventdata, handles)
+handles=guidata(hObject);
+handles.SelectedExperimentsID = eventdata.Indices(:,1)
+t = handles.SelectedExperimentsID;
+SelList =  handles.ParamTabUDtxt{t,1};
+% ---info -------------
+STX={'Manually selected experiments' ...
+    '' ...
+   SelList{:}};
+set(handles.Support,'String',STX)
+%-------------------
+guidata(hObject, handles);
+
+
+% --- Executes on button press in SelectAllExp.
+function SelectAllExp_Callback(hObject, eventdata, handles)
+handles=guidata(hObject);
+m = size(handles.ParamTabUDtxt,1);
+handles.SelectedExperimentsID = 1:m;
+t = handles.SelectedExperimentsID;
+SelList =  handles.ParamTabUDtxt{t,1};
+% ---info -------------
+STX={'Manually selected experiments' ...
+    '' ...
+   SelList{:}};
+set(handles.Support,'String',STX)
+%-------------------
+guidata(hObject, handles);

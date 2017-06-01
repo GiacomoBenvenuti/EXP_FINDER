@@ -56,7 +56,7 @@ for i =1:size(FF,1) % go through all subfolders
        for y = 1:size(tm,1)
            destt = [MyDataFolder filesep ffn filesep tm(y).name];
            if ~exist(destt)
-              succ = copyfile([DataDir  filesep FF(i).name filesep tm(y).name],destt) ;
+              succ = copyfile([DataDir  filesep FF(i).name filesep tm(y).name],   destt) ;
               if succ ==1
                   ctg=ctg+1;
                   goood{ctg} =tm(y).name;

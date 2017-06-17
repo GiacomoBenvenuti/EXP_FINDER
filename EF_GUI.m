@@ -50,7 +50,7 @@ function EF_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
 FN = mfilename('fullpath')
 tm = FN(1:size(FN,2)-6);
-MyDataFolder = [tm 'DATABASE'];
+MyDataFolder = [tm 'DATABASE_EF'];
 
 cd (MyDataFolder)
 handles.output = hObject;
@@ -79,6 +79,7 @@ handles.Selected_Protocols = ['Show_All' ; ProtNames'];
 handles.FlagProtSelection=0;
 handles.flag_Create_Tab = 0;
 handles.MyDataFolder = MyDataFolder;
+handles.SelectedExperimentsID =[];
 
 
 guidata(hObject, handles);
@@ -94,21 +95,24 @@ varargout{1} = handles.output;
 
 % --- Executes on selection change in MonkeyName.
 function MonkeyName_Callback(hObject, eventdata, handles)
-s= what(['DATABASE']);
-cd(s.path);
+% s= what(['DATABASE']);
+% cd(s.path);
 
 % LOAD
 handles=guidata(hObject);
+
 MNtmp=handles.MonkNameAll;
 ProtNames = handles.ProtName;
 Sel_PRT = handles.Selected_Protocols;
 flagPS= handles.FlagProtSelection;
 Sel_Monk = handles.Selected_Monkeys;
 %set(hObject,'String',MN,'max',size(MN,2));
+MyFold = handles.MyDataFolder;
+cd(MyFold);
 
 % GET
 %MN =MNtmp(2:end);
-SL_MN = get(hObject,'Value')
+SL_MN = get(hObject,'Value');
 
 % PROCESS
 if SL_MN==1
@@ -124,18 +128,18 @@ else
     if ~flagPS
         
         % PROCESS
-        SMN=MNtmp(SL_MN)
+        SMN=MNtmp(SL_MN);
         % for multiple monkeys selection find which protocol
         % they have in common
         for i = 1:size(SMN,2)
-            n = [SMN{i} 'PList']
+            n = [SMN{i} 'PList'];
             load( n );
             eval(['tm = fieldnames(' n ')']);
             ProtList{i}=tm;
         end
         
         for i = 1:size(ProtList,2)
-            CompProt(:,i) = ismember(ProtList{1},ProtList{i})
+            CompProt(:,i) = ismember(ProtList{1},ProtList{i});
         end
         CP = sum( CompProt,2);
         CPIndex = find(CP == size(ProtList,2));
@@ -211,8 +215,8 @@ end
 
 % --- Executes on selection change in Protocol.
 function Protocol_Callback(hObject, eventdata, handles)
-s= what(['DATABASE'])
-cd(s.path);
+% s= what(['DATABASE'])
+% cd(s.path);
 
 % LOAD
 handles=guidata(hObject);
@@ -220,8 +224,9 @@ SMK=handles.Selected_Monkeys; % use the custum monkey selection
 Sel_Prot=handles.Selected_Protocols ;
 ProtName=handles.ProtName;
 MNtmp=handles.MonkNameAll;
+MyFold = handles.MyDataFolder;
 %MN =MNtmp(2:end);
-
+cd(MyFold)
 % GET
 PRTn= get(hObject,'Value'); % get user selection
 
@@ -248,7 +253,7 @@ else
     ct=0;
     for i = 1:size(MonkList,2)
         tm = MonkList{i};
-        ts = strfind(tm , PNs)
+        ts = strfind(tm , PNs);
         if ~isempty(ts)
             ct=ct+1;
             MNP{ct} = tm(1:ts-1);
@@ -354,22 +359,36 @@ end
 
 % --- Executes on button press in Update_Parameters.
 function Update_Parameters_Callback(hObject, eventdata, handles)
+set(handles.figure1,'color',[1 .5 .5]) % change Menu color to red
+drawnow
+% Load data from handle
 handles=guidata(hObject);
-
-set(handles.figure1,'color',[1 .5 .5])
-
 flagUD = handles.flag_Create_Tab;
-
 Sel_PRT = handles.Selected_Protocols;
 MM = handles.Selected_Monkeys;
+DF = handles.MyDataFolder; 
+
+% Check Selection Protocols List
+if size(Sel_PRT,1) >2
+   h = errordlg('You need to select a Protocol from the listbox above to continue ', 'EXP_FINDER')
+   uiwait(h)
+   set(handles.figure1,'color',[.94 .94 .94])
+   drawnow
+   error('Select one Protocol!!')
+end
+ 
+% Check selection Monkey List (GUI)
 tm = get(handles.MonkeyName,'Value');
 Sel_Monk ={ MM{tm}};
 
+% Get rid of 'Show All' field
 if sum(ismember(Sel_Monk,'Show_All'))>0
  Sel_Monk = setdiff(Sel_Monk,'Show_All');
 end
     
-    
+% This flag indicates if it is the first time you generate the 
+% Protocol list or you are updating it after changing something 
+% in the tab
 if flagUD == 0
 
 % Info ------------
@@ -390,21 +409,25 @@ STX=({'SELECTION : '   ...
 set(handles.Support,'String',STX)
 %-----------------
 
-% PROCESS
-% CreateParamTab
-sp=what(['PRT_' Sel_PRT{2}]);
-
+% PROCESS - Init PARAM LIST
+ sp=([DF filesep 'PRT_' Sel_PRT{2}]); % use data .mat files in the internal database
 clear L
+%L='                                                                                                                                                           '
 for i = 1:size(Sel_Monk,2)
     tm = [Sel_Monk{i} Sel_PRT{2}];
-    load([sp.path '/' tm])
+    load([sp '/' tm])
     eval(['mm{i} = ' tm]);
     s = size(mm{1},2);
     fn{i} =fieldnames(mm{i});
     nf(i)=size( fn{i},1);
-    txx = [' mm{' num2str(i) '}'];
-    L(1,(1:numel(txx))+(numel(txx)*(i-1) ) ) = txx ;
+    clear txx
+    txx = [' mm{' num2str(i) '}'] ;
+ %   L(1,((1:numel(txx)))   +    ((numel(txx))*(i-1) ) ) = txx ;
+ %  L(1,(1:7)+((7)*(i-1) ) ) = txx ;
+   L2{i} = txx;
 end
+L = [L2{:}];
+
 
 % Check if struct diff monkeys have the same num of fields!
 if ~(sum(nf)==nf(1)*(numel(nf))) 
@@ -430,16 +453,18 @@ if  strcmp(d, 'Yes') == 1
    % use fn
 else
     errordlg('Select a new group of Monkeys!','Different param number');
-   
+     error('You stopped the process: Select a new group of Monkeys!');
 end
 end
 
-eval(['ParamTab = [' L ']' ]);% full Tab 
+eval(  [ 'ParamTab = [' L ']' ]  )  ;% full Tab 
+
 
 ParamTabUD = ParamTab;  % ParamTabUD is the one that will be updated
 handles.ParamTab = ParamTab;
 handles.ParamTabUD = ParamTabUD;
 handles.Msg = {'  '};
+
 else %-----------------------------------------------
     %--------------------------------------------------
     
@@ -449,7 +474,7 @@ ParamTabUD=handles.ParamTabUD;
 Condx = handles.Cond;
 Msg = handles.Msg;
 
-%GET
+%GET - find which field has been modified in the param tab
 TabModif = get(handles.uitable1,'Data');
 FieldCol =  TabModif(:,1);
 SelCol=[{TabModif{:,3}}];
@@ -458,11 +483,11 @@ if numel(s1)>0 % go on only if user modified the Tab
 InpField = FieldCol(s1);
 
 for i =1:numel(s1)
-CondSel{i} = str2num(Condx{s1(i)}) ; 
+CondSel{i} = str2num(Condx{s1(i)}) ; % Possible field values
 
-InpVal{i} =  str2num(cell2mat(SelCol(s1(i))));
+InpVal{i} =  str2num(cell2mat(SelCol(s1(i)))); % value selected by the user
 
-MTCH{i} = isempty(intersect(CondSel{i},InpVal{i}));
+MTCH{i} = isempty(intersect(CondSel{i},InpVal{i})); % chack if the user selected one oof the possible values
 end 
 
 if find([MTCH{:}]==0) ==0
@@ -500,7 +525,7 @@ if isempty(SelExpInd )
 else
     
 
-ParamTabUD = ParamTabUD(SelExpInd);
+ParamTabUD = ParamTabUD(SelExpInd); % ParamTab Updated
 handles.ParamTabUD = ParamTabUD;
 
 % Info ------------
@@ -542,7 +567,9 @@ handles.flag_Create_Tab = 1; % record the tab has already been created for next 
 handles.ParamTabUDtxt = ParamTabUDtxt;
 handles.ParamTabUD = ParamTabUD;
 handles.Cond = Cond;
+
 set(handles.figure1,'color',[.94 .94 .94])
+drawnow
 guidata(hObject, handles);
 
 
@@ -667,11 +694,13 @@ set(handles.figure1,'color',[.94 .94 .94]);
 % --- Executes on button press in ResetTab.
 function ResetTab_Callback(hObject, eventdata, handles)
 set(handles.figure1,'color',[1 .5 .5])
+drawnow
 ParamTabUD = handles.ParamTab; 
 [ParamTabUD ParamTabUDtxt Cond]=UpdateTabs(ParamTabUD,handles);
 handles.ParamTabUDtxt = ParamTabUDtxt;
 handles.ParamTabUD = ParamTabUD;
 handles.Cond = Cond; 
+handles.SelectedExperimentsID =[];
 
 %- info --
 STX={ 'YOU HAVE RESET YOUR RESEARCH IN THE TAB!!!' ...
@@ -694,6 +723,7 @@ set(handles.Support,'String',STX)
 handles.Msg = '';
 
 guidata(hObject, handles);
+drawnow
 set(handles.figure1,'color',[.94 .94 .94])  
  
  
@@ -724,7 +754,7 @@ if ~isempty(tm)
 Col= tm(2);
 
 if Col ==2
-CellID =  tm(1)
+CellID =  tm(1);
 
  STX={ 'Display the full content of the Option column:' ...
      Cond{CellID}};
@@ -769,16 +799,31 @@ guidata(hObject, handles);
 % --- Executes on button press in ExpTabMat.
 function ExpTabMat_Callback(hObject, eventdata, handles)
 handles=guidata(hObject);
-tm = get(handles.DispFoldExport,'String')
+tm = get(handles.DispFoldExport,'String');
+if isempty(handles.SelectedExperimentsID)
+    errordlg(['You must select one or more experiments to save: Select the ' ...
+        'experiments from the EXP LIST with the mouse or click on the Select all Exp button '])
+    error(['You must select one or more experiments to save: Select the ' ...
+        'experiments from the table with the mouse or click on the Select all Exp button '])
+end
 SelID = handles.SelectedExperimentsID;
 T = handles.ParamTabUD(1,SelID); 
-T2=struct2table(T)
+T2=struct2table(T);
+
+
+Answ = questdlg(['Save as :  ' tm '.mat'])
+if strcmp(Answ,'Yes')
 save([tm '.mat'],'T2');
 % ---info -------------
 STX={'HELP' ...
     'Congratulations, the experiments list' ...
     'has been saved as a .mat file'};
 set(handles.Support,'String',STX)
+else
+ STX={'HELP' ...
+    'You did NOT saved the File'};
+set(handles.Support,'String',STX)   
+end
 %-------------------
 
 
@@ -788,7 +833,7 @@ function pushbutton10_Callback(hObject, eventdata, handles)
 rispos = questdlg('This function is available only on PC where Excel is installed. Do you want to continue?');
 if strcmp(rispos,'Yes')
 handles=guidata(hObject);
-tm = get(handles.DispFoldExport,'String')
+tm = get(handles.DispFoldExport,'String');
 T = handles.ParamTabUDtxt; 
 T3=table2cell(T);
 xlswrite([tm '.xls'],T3);
@@ -832,6 +877,6 @@ SelList =  handles.ParamTabUDtxt{t,1};
 STX={'Manually selected experiments' ...
     '' ...
    SelList{:}};
-set(handles.Support,'String',STX)
+set(handles.Support,'String',STX);
 %-------------------
 guidata(hObject, handles);

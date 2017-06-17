@@ -1,6 +1,14 @@
 function [ParamTabUD ParamTabUDtxt Cond]=UpdateTabs(ParamTabUD,handles);
-% Update the two tabs in EXPERIMET FINDER GUI
-% by GB
+% [ParamTabUD ParamTabUDtxt Cond]=UpdateTabs(ParamTabUD,handles);
+%  After the user specified some parameter value in the PARAM LIST (EF_GUI), this script takes the current 
+%  EXP LIST, filter the experiments matching with that parameter values and generate a new 
+%  PARAM LIST based on the remaining experiments. The EXP list is resetted pushing the 
+%  RESET TAB function or Show All in the monekeys and protocols lists. 
+% 
+% ParamTabUDtxt : is a version of the PARAM LIST where all values are text.
+% you need this to display the param values in the PARAM LIST GUI (uitable)
+% by GB 2017
+
 % Generate Selection tab
 ParamNames = fieldnames(ParamTabUD);
 clear Cond SelTab
@@ -12,7 +20,7 @@ for i = 1: size(ParamNames,1 )
            q = q+1;
        end
     
-     % if field contains 2 values categories (i.e. x,y. coordinats) save as conplex num
+     % if Param field contains 2 values categories (i.e. x,y. coordinats) save as conplex num
      if size(ParamTabUD(q).(ParamNames{i}),1) >1 
          clear pp
          for k = 1:size(ParamTabUD,2)
@@ -34,22 +42,31 @@ for i = 1: size(ParamNames,1 )
                pp{k} = 'None';  
              end   
          end 
-           i
+         
          if sum(isspace(pp{1})) ==1
              tm = unique(pp) ;
          else
              pp = setdiff(pp,'None');
-          
+            if ~isempty(pp)
+             
              ff = cat(2,pp{:}) ;
              ff2 =strsplit(ff);
              ff2 = setdiff(ff2,'');
              tm = unique( ff2  ); % unique(  [pp{:} ] )    ;
+            
              
              for j = 1:size(tm,2)
-                 tm{j} = [tm{j} ' ' ]  
+                 tm{j} = [tm{j} ' ' ]  ;
              end
+             
+             else
+                tm = 'None';
+            end
+             
          end
-          end
+         end
+     
+     
          
               %tm = [unique(pp)];
          %    if  isstr(ParamTabUD(q).(ParamNames{i})  )
@@ -76,7 +93,7 @@ for i = 1: size(ParamNames,1 )
 end
 
 T = table(ParamNames, Cond',SelTab');
-% SET
+% SET Param list/table
 set(handles.uitable1,'Data',T{:,:} ,'ColumnName',{'Param' , 'Options', 'Select' }, ...
     'ColumnEditable',[false false true],'ColumnWidth',{150 250 140});
 

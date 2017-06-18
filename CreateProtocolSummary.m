@@ -14,7 +14,7 @@ wb = waitbar(0,'Create Paramers database. Please wait...');
 
 % Generate monkey list
 clear MN MN2  MonkName
-MN= dir('*PList.mat');
+MN= dir('*PList.mat'); % there is one file like this for each monkey and contains all the protocols run with that monkey
 MN2 = {MN.name};
 for i = 1:size(MN2,2)
     tmp =MN2{i};
@@ -22,6 +22,8 @@ for i = 1:size(MN2,2)
     MonkName{i} = tmp2;
 end
 
+% Create Protocols Lists : collect all experiments across monkeys for that
+% protcol
 clear PRT
 for i = 1:size(MN2,2)
     load(MN2{i});
@@ -30,7 +32,7 @@ for i = 1:size(MN2,2)
     PRT{i}=tm;
 end
 
-myfold = dir( '*LogAddress.mat');
+myfold = dir( '*LogAddress.mat'); % For every monkey there is a file like this that contains all the address of its .log files
 a={myfold.name};
            
 for Monk =1:size(MN,1) % select monkey based on MonkName
@@ -44,20 +46,28 @@ for Monk =1:size(MN,1) % select monkey based on MonkName
         if exist(['PRT_'  PRT{Monk}{p}])==0
             mkdir(['PRT_'  PRT{Monk}{p}]);
         end
-    
-        
         load([  MonkName{Monk} 'PList.mat']); % Load all data name
         
         clear blkList
+        % Check if the current Protocol was used for the current monkey
         MonkName{Monk} 
         eval (['f = fieldnames([' MonkName{Monk} 'PList])']);
         f2 = strfind(f,PRT{Monk}{p});
         
+        % If this protocol was run in this monkey get the experiments
+        % references
         if cell2mat(f2)>0
-            eval([ 'blkList = '  MonkName{Monk} 'PList.' PRT{Monk}{p}])
-          
-             ProtCategories = {'ExptInfo.', 'Conditions.'} % this is something that could be cahnged by the user
+            
+            % This are all the exp for this protocol run in this monkey
+            eval([ 'blkList = '  MonkName{Monk} 'PList.' PRT{Monk}{p}]);
+            
+            % Get the param under those structures in the .log file
+         %---------------------------------------------------------------------------- 
+             ProtCategories = {'ExptInfo.', 'Conditions.'}; % this is something that could be cahnged by the user
+        %----------------------------------------------------------------------------
             clear monk
+            
+            % Get param experiment by experiment
             for k =1:size(blkList,2)
               
                 if ~isempty(blkList{k})
@@ -68,14 +78,16 @@ for Monk =1:size(MN,1) % select monkey based on MonkName
                 if isempty(tm)
                     tm = size(fns,2);
                 end
-           
-                A = fileread(fns(1,1:tm)); % load the log file to matlab
+                % Load the text from the .log file
+                A = fileread(fns(1,1:tm)); 
                 
-                monk(k).name = fns(1, tm-17:tm-4); % save the block name
-                
-                
+                in = find( fns(1, tm-20:tm-4) == filesep);
+                 monk(k).name = fns(1, tm-20+in(end):tm-4); % save the block name
+              %  monk(k).name = fns(1, tm-17:tm-4); % save the block name
+                monk(k).PathLogFile = fns(1:tm-20+in(end)-1);
                 % -----
-                % Find the initial point of all params fields
+               
+                % Find the initial point in the log file text of all params fields
                 % you want to save
                 clear tID
                 for q = 1:numel(ProtCategories)
@@ -100,7 +112,7 @@ for Monk =1:size(MN,1) % select monkey based on MonkName
                     tmSTR(isspace(tmSTR))=[];
                     po = strfind(tmSTR,'.');
                     tmSTR(1:po) = [];
-                    eval(['monk(k).' tmSTR ]) ;
+                    eval(['monk(k).' tmSTR ]) ; % tmSTR contain the filed name and the field value (e. i. Room=4)
                  end
                 end
                 end

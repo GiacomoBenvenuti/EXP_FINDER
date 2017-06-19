@@ -16,7 +16,7 @@ for i = 1: size(ParamNames,1 )
        Cond{i} =nan;
 
        q=1;
-       while isempty(ParamTabUD(q).(ParamNames{i})) & q<size(ParamTabUD,2)
+       while isempty(ParamTabUD(q).(ParamNames{i})) & q<size(ParamTabUD,2) | isnan((ParamTabUD(q).(ParamNames{i})) )
            q = q+1;
        end
     
@@ -24,7 +24,8 @@ for i = 1: size(ParamNames,1 )
      if size(ParamTabUD(q).(ParamNames{i}),1) >1 
          clear pp
          for k = 1:size(ParamTabUD,2)
-             if ~isempty(ParamTabUD(k).(ParamNames{i}))
+             if ~isempty(ParamTabUD(k).(ParamNames{i})) & ~isnan(ParamTabUD(k).(ParamNames{i})(1,:))
+              
               pp{k} = num2str(unique(complex(ParamTabUD(k).(ParamNames{i})(1,:),  ParamTabUD(k).(ParamNames{i})(2,:))));
              else
                pp{k} = 'None';  
@@ -36,8 +37,10 @@ for i = 1: size(ParamNames,1 )
          
            clear pp
          for k = 1:size(ParamTabUD,2)
-             if ~isempty(ParamTabUD(k).(ParamNames{i}))
-              pp{k} = [num2str((ParamTabUD(k).(ParamNames{i}))) ' '];
+             if ~isempty(ParamTabUD(k).(ParamNames{i})) & ~isnan(ParamTabUD(k).(ParamNames{i}))
+                
+                                   
+                pp{k} = [num2str((ParamTabUD(k).(ParamNames{i}))) ' '];
              else
                pp{k} = 'None';  
              end   

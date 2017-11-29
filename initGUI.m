@@ -16,7 +16,7 @@ PRT= dir('PRT*');
 tm = {PRT.name};
 if ~ isempty(tm)
 for i =1:size(tm,2)
-    PR{i} = tm{i}(5:end)
+    PR{i} = tm{i}(5:end);
 end
 
 ProtNames = PR;

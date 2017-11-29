@@ -6,6 +6,26 @@ changed{1}='none';
 FF = dir(DataDir);
 ctg = 0; % counters
 ctb=0;
+
+ct=0;
+for i =1:size(FF,1) % go through all subfolders (MonkeyNames)
+    if isempty(strfind(FF(i).name,'.'))
+    ffn =FF(i).name;
+        % create a backup file if a list already exist
+        if exist([MyDataFolder filesep ffn 'LogAddress.mat'])
+            ct=ct+1;
+            ExistingFolders{ct} = ffn;
+        end
+    end
+end
+
+if ct>0
+[sxxx,v] = listdlg('PromptString','Do you want to update one of the existing databases? ',...
+                'ListString',ExistingFolders)
+            
+ExistingListToUD = { ExistingFolders{sxxx} };
+end
+
 for i =1:size(FF,1) % go through all subfolders (MonkeyNames)
     if isempty(strfind(FF(i).name,'.'))
     %     if numel(FF(i).name)>3
@@ -13,29 +33,43 @@ for i =1:size(FF,1) % go through all subfolders (MonkeyNames)
         flag = 1;
         % create a backup file if a list already exist
         if exist([MyDataFolder filesep ffn 'LogAddress.mat'])
-            % info
-            STX={' Please check popup dialog to continue. '};
-            set(handles.Support,'String',STX)
             
-            a =questdlg([' An Experiments list for ' ffn ' already exists, do you want to create a new one (is there any new experiment)?'])
-           pause(.5)
-            if strcmp(a,'Yes')
-                load([MyDataFolder filesep ffn 'LogAddress.mat']);
-                save ([MyDataFolder filesep ffn 'LogAddressBK.mat'],'LogAddress');
-                
-                STX={[ffn ' Experiments List will be Updated. ' ]...
-                    '' ...
-                    'A backup file of the old List has been generated'  };
-                set(handles.Support,'String',STX)
-                
+            if ismember(ffn, ExistingListToUD)
+            
+              load([MyDataFolder filesep ffn 'LogAddress.mat']);
+              save ([MyDataFolder filesep ffn 'LogAddressBK.mat'],'LogAddress');
             else
-                
-                STX={ffn ' Experiments List will NOT be Updated. '};
-                set(handles.Support,'String',STX)
-                flag = 0;
-                ctb=ctb+1;
-                notchanged{ctb} =[ffn  'LogAddress.mat'];
+             flag = 0;
+             ctb=ctb+1;
+             notchanged{ctb} =[ffn  'LogAddress.mat'];
             end
+            
+            
+            
+%             % info ---
+%             STX={' Please check popup dialog to continue. '};
+%             set(handles.Support,'String',STX)
+%             % -----
+%             
+%             a =questdlg([' An Experiments list for ' ffn ' already exists, do you want to create a new one (is there any new experiment)?'])
+%            pause(.5)
+%             if strcmp(a,'Yes')
+%                 load([MyDataFolder filesep ffn 'LogAddress.mat']);
+%                 save ([MyDataFolder filesep ffn 'LogAddressBK.mat'],'LogAddress');
+%                 
+%                 STX={[ffn ' Experiments List will be Updated. ' ]...
+%                     '' ...
+%                     'A backup file of the old List has been generated'  };
+%                 set(handles.Support,'String',STX)
+%                 
+%             else
+%                 
+%                 STX={ffn ' Experiments List will NOT be Updated. '};
+%                 set(handles.Support,'String',STX)
+%                 flag = 0;
+%                 ctb=ctb+1;
+%                 notchanged{ctb} =[ffn  'LogAddress.mat'];
+%             end
         end
         
         if flag ==1 %

@@ -436,20 +436,32 @@ d = questdlg(['The number of parameters ' ...
     '[' num2str(nf) ']. Do you want to continue anyway?'] )
 
 if  strcmp(d, 'Yes') == 1
+ 
+ AllFileds = unique(cat(1,fn{:})); 
+ 
+  for i = 1:size(fn,2)
+       for y = 1: size(AllFileds,1)
+            if  ~isfield(mm{i}, AllFileds{y});
+                for k = 1:size(mm{i},2)
+                 eval(['mm{i}(1,k).' AllFileds{y} ' = nan']);
+                end
+           end
+          end
+   end
  %  errordlg('I still have to do this part :) ','Different param number');  
-   [a b] = max(nf(:)) ;
-   LessP = find(nf<a);
-     
-   DiffParamInd =  fn{b}(find(ismember(fn{b}, fn{ LessP(1) }) ==0));
-  
-   for i = 1:numel(LessP)
-       for y = 1: numel(DiffParamInd )
-           for q =1:size(mm{LessP(i)},2)
-        eval([' mm{LessP(i)}(1,q).' DiffParamInd{y} ' = nan']);
-       end
-   end
-   end
-  
+%    [a b] = max(nf(:)) ;
+%    LessP = find(nf<a);
+%      
+%    DiffParamInd =  fn{b}(find(ismember(fn{b}, fn{ LessP(1) }) ==0));
+%   
+%    for i = 1:numel(LessP)
+%        for y = 1: numel(DiffParamInd )
+%            for q =1:size(mm{LessP(i)},2)
+%         eval([' mm{LessP(i)}(1,q).' DiffParamInd{y} ' = nan']);
+%        end
+%    end
+%    end
+%   
    % use fn
 else
     errordlg('Select a new group of Monkeys!','Different param number');
@@ -494,7 +506,6 @@ if find([MTCH{:}]==0) ==0
    errordlg('Your selection is not correct: copy one or more values separated by a comma from the Option column (#2)');
 else 
 
-
 % Find Exp index with selected param value
 for i = 1: numel(InpVal)
   % put together EXP matching multiple selections 'OR'
@@ -528,6 +539,11 @@ else
 ParamTabUD = ParamTabUD(SelExpInd); % ParamTab Updated
 handles.ParamTabUD = ParamTabUD;
 
+
+
+end  % List of exceptions
+end
+end
 % Info ------------
 clear STX
 % 'SELECTION : '   ... 
@@ -552,10 +568,6 @@ set(handles.Support,'String',STX)
 %-----------------
 
 handles.Msg = Msg;
-
-end  % List of exceptions
-end
-end
 end % only first time --------------------------------------
 %------------------------------------------------------
 handles.flag_Create_Tab = 1; % record the tab has already been created for next time the button is pushed

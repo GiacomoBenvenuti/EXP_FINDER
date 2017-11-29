@@ -16,7 +16,7 @@ for i = 1: size(ParamNames,1 )
        Cond{i} =nan;
 
        q=1;
-       while isempty(ParamTabUD(q).(ParamNames{i})) & q<size(ParamTabUD,2) | isnan((ParamTabUD(q).(ParamNames{i})) )
+       while isempty(ParamTabUD(q).(ParamNames{i})) | isnan(ParamTabUD(q).(ParamNames{i}))  & q<size(ParamTabUD,2)
            q = q+1;
        end
     

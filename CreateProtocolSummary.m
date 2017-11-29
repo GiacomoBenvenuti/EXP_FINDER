@@ -81,10 +81,12 @@ for Monk =1:size(MN,1) % select monkey based on MonkName
                 % Load the text from the .log file
                 A = fileread(fns(1,1:tm)); 
                 
-                in = find( fns(1, tm-20:tm-4) == filesep);
-                 monk(k).name = fns(1, tm-20+in(end):tm-4); % save the block name
+                tm 
+                fns
+                in = find( fns(1, :) == filesep);
+                 monk(k).name = fns(1, in(end)+1:tm-4); % save the block name
               %  monk(k).name = fns(1, tm-17:tm-4); % save the block name
-                monk(k).PathLogFile = fns(1:tm-20+in(end)-1);
+                monk(k).PathLogFile = fns(1:in(end)-1);
                 % -----
                
                 % Find the initial point in the log file text of all params fields

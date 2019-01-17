@@ -527,6 +527,7 @@ for i = 1: numel(InpVal)
   Msg{size(Msg,2)+1} = cell2mat([InpField{i} '=  '  {num2str(InpVal{i})}]);
 
 end
+
 % find intersection among exp indexes selected based on different params
 clear SelExpInd
 SelExpInd = mintersect(SelExpInd_All{:});
@@ -607,6 +608,9 @@ guidata(hObject, handles);
 
 % --- Executes on button press in Update_Database.
 function Update_Database_Callback(hObject, eventdata, handles)
+% When the user pushes UPDATE DATABASE button it starts a squences
+% of dialogs to load the meta-data from the .log files in the /data folders
+
 aa = questdlg(['You are about to update the internal .log files database. '...
     'This operation can take several minutes. Are you sure you want to continue?'])
 if strcmp(aa,'Yes')

@@ -29,7 +29,6 @@ for i =1:size(a,2)
         if  ~strcmp(fn{y},'')
             if isempty(strfind(fn{y}(1),'.'))
                 try
-                    
                     A = fileread( fn{y});
                     tstart = strfind(A,'ProtocolName=') + numel('ProtocolName=')+1;
                    if  ~isempty(tstart)

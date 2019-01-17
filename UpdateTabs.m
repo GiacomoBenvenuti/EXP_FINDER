@@ -9,17 +9,25 @@ function [ParamTabUD ParamTabUDtxt Cond]=UpdateTabs(ParamTabUD,handles);
 % you need this to display the param values in the PARAM LIST GUI (uitable)
 % by GB 2017
 
-% Generate Selection tab
+% Generate Selection tab (UD=UpDateds)
 ParamNames = fieldnames(ParamTabUD);
 clear Cond SelTab
 for i = 1: size(ParamNames,1 )
        Cond{i} =nan;
-
+       
+       % Don't consider empty or nan fields in the tab the user has
+       % modified
+     
+       
        q=1;
-       while isempty(ParamTabUD(q).(ParamNames{i})) | isnan(ParamTabUD(q).(ParamNames{i}))  & q<size(ParamTabUD,2)
-           q = q+1;
-       end
-    
+    if size(ParamTabUD,2)>1
+           while (isempty(ParamTabUD(q).(ParamNames{i})) | sum(isnan(ParamTabUD(q).(ParamNames{i})))>0)  & q<size(ParamTabUD,2)-1
+              
+               q = q+1 ;
+             
+           end
+    end
+       
      % if Param field contains 2 values categories (i.e. x,y. coordinats) save as conplex num
      if size(ParamTabUD(q).(ParamNames{i}),1) >1 
          clear pp
@@ -38,8 +46,6 @@ for i = 1: size(ParamNames,1 )
            clear pp
          for k = 1:size(ParamTabUD,2)
              if ~isempty(ParamTabUD(k).(ParamNames{i})) & ~isnan(ParamTabUD(k).(ParamNames{i}))
-                
-                                   
                 pp{k} = [num2str((ParamTabUD(k).(ParamNames{i}))) ' '];
              else
                pp{k} = 'None';  
@@ -127,3 +133,7 @@ set(handles.uitable2,'Data', ParamTabUDtxt{:, :}  ,'ColumnName',  {ParamNames{:}
 
 
 end
+
+
+
+

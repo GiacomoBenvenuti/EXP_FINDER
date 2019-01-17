@@ -7,6 +7,7 @@ FF = dir(DataDir);
 ctg = 0; % counters
 ctb=0;
 
+% Ask the User if he wants to update the wxisting folders
 ct=0;
 for i =1:size(FF,1) % go through all subfolders (MonkeyNames)
     if isempty(strfind(FF(i).name,'.'))
@@ -33,9 +34,7 @@ for i =1:size(FF,1) % go through all subfolders (MonkeyNames)
         flag = 1;
         % create a backup file if a list already exist
         if exist([MyDataFolder filesep ffn 'LogAddress.mat'])
-            
             if ismember(ffn, ExistingListToUD)
-            
               load([MyDataFolder filesep ffn 'LogAddress.mat']);
               save ([MyDataFolder filesep ffn 'LogAddressBK.mat'],'LogAddress');
             else

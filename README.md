@@ -1,6 +1,18 @@
 # Experiment Finder 
 By Giacomo Benvenuti, PhD
+
 Eyal Seidemann Lab at the University of Texas at Austin,USA
+
+Over the years, the Seidemann Lab has run multiple experiments using many combinations of stimuli and brain imaging parameters. Imagine that you have an hypothesis that you want to test using a certain cobination of experimental conditions. It would be great if you could check if an experiment similar to the one you want to run has been already ran in the past. 
+
+EXP_FINDER allows you to quickly see a summary of the experimental conditions run in the past and define multiple filters to find experiments with conditions similar enough to the one you need. 
+
+**You just need to lounch the GUI and follow the suggestions from the interactive HELP windonw at the bottom left of the frame!**
+
+
+<p align="center">
+<img src="./Recording_DEMO_EXP_FINDER.gif" width="100%">
+</p>
 
 ## Quick start
 This app allows you to:  
@@ -18,13 +30,9 @@ This app allows you to:
     - When you are happy, you can select the experiments you want to use in the bottom-right window/spreadsheet and push the blue button "EXPORT EXP LIST" . This will open a window to export the list of experiments and their metadata. 
 5. Export this list as a Matlab or Excel table file. This table can be loaded directly to RunDA to run analysis on these experiments  
 
-**You just need to lounch the GUI and follow the suggestions from the interactive HELP windonw at the bottom left of the frame!**
 
 or run “RunEF.m” in the command window
 
-<p align="center">
-<img src="./Recording_DEMO_EXP_FINDER.gif" width="100%">
-</p>
 
 
 ---
